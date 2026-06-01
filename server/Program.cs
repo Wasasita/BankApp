@@ -5,7 +5,18 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
+        WebApplication app = BuildWebApplication(args);
+        BankingSeedData bankingData = SeedTestData();
+
+        ShowStartupScreen();
+        RunMainMenu(bankingData);
+
+        StartWebServer(app);
+    }
+
+    private static WebApplication BuildWebApplication(string[] args)
+    {
+        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddSingleton<AddNumbersService>();
         builder.Services.AddCors(options =>
@@ -18,21 +29,96 @@ public class Program
             });
         });
 
-        var app = builder.Build();
+        WebApplication app = builder.Build();
         app.UseCors("Frontend");
 
-        // Web API Endpoints
+        ConfigureWebApiEndpoints(app);
+
+        return app;
+    }
+
+    private static void ConfigureWebApiEndpoints(WebApplication app)
+    {
         app.MapGet("/api/add", (int a, int b, AddNumbersService service) =>
         {
-            var result = service.Add(a, b);
+            int result = service.Add(a, b);
             return Results.Ok(new AddNumbersResponse(a, b, result));
         });
 
-        app.MapGet("/api/welcome", () =>
-        {
-            return Results.Ok(new { Message = "Hello, World!" });
-        });
+        app.MapGet("/api/welcome", () => Results.Ok(new { Message = "Hello, World!" }));
+    }
 
+    private static void ShowStartupScreen()
+    {
+        Console.Clear();
+        Console.WriteLine("======================================");
+        Console.WriteLine("  Hello World - CitiBank Console App  ");
+        Console.WriteLine("======================================\n");
+        Console.WriteLine("Press any key to load the main menu...");
+        Console.ReadKey();
+    }
+
+    private static void RunMainMenu(BankingSeedData bankingData)
+    {
+        bool running = true;
+
+        while (running)
+        {
+            string choice = ShowMainMenuAndGetChoice();
+
+            switch (choice)
+            {
+                case "1":
+                    HandleLoginFlow(bankingData);
+                    break;
+
+                case "7":
+                    running = false;
+                    Console.WriteLine("\nStarting Web Host Server backend...");
+                    break;
+            }
+        }
+    }
+
+    private static string ShowMainMenuAndGetChoice()
+    {
+        Console.Clear();
+        Console.WriteLine("=== MASTER BANKING MENU ===");
+        Console.WriteLine("1) Login to Account Dashboard");
+        Console.WriteLine("7) Stop Menu & Start Web Server");
+        Console.Write("Select an option: ");
+
+        return Console.ReadLine() ?? "";
+    }
+
+    private static void HandleLoginFlow(BankingSeedData bankingData)
+    {
+        User? loggedInUser = HandleConsoleLogin(bankingData.Users);
+
+        if (loggedInUser == null)
+        {
+            Console.WriteLine("\nLogin Failed! Invalid credentials.");
+            Console.ReadKey();
+            return;
+        }
+
+        if (loggedInUser is Admin standardAdmin)
+        {
+            AdminDashboard(standardAdmin, bankingData.Customers);
+        }
+        else if (loggedInUser is Customer standardCustomer)
+        {
+            CustomerDashboard(standardCustomer, bankingData.Customers, ref bankingData.AccountCounter);
+        }
+    }
+
+    private static void StartWebServer(WebApplication app)
+    {
+        app.Run();
+    }
+
+    private static BankingSeedData SeedTestData()
+    {
         // TERMINAL CONSOLE LOOP & DATA SEEDING (FOR TRAINING PURPOSES ONLY - NOT FOR PRODUCTION USE!)
         int customerCounter = 1;
         int accountCounter = 1001;
@@ -61,54 +147,7 @@ public class Program
         users.Add(c1);
         users.Add(c2);
 
-        // PRINT HELLO WORLD BEFORE ACCESSING MAIN APPLICATION
-        Console.Clear();
-        Console.WriteLine("======================================");
-        Console.WriteLine("  Hello World - CitiBank Console App  ");
-        Console.WriteLine("======================================\n");
-        Console.WriteLine("Press any key to load the main menu...");
-        Console.ReadKey();
-
-        bool running = true;
-        while (running)
-        {
-            Console.Clear();
-            Console.WriteLine("=== MASTER BANKING MENU ===");
-            Console.WriteLine("1) Login to Account Dashboard");
-            Console.WriteLine("7) Stop Menu & Start Web Server");
-            Console.Write("Select an option: ");
-
-            string choice = Console.ReadLine() ?? "";
-            switch (choice)
-            {
-                case "1":
-                    User? loggedInUser = HandleConsoleLogin(users);
-                    if (loggedInUser != null)
-                    {
-                        if (loggedInUser is Admin standardAdmin)
-                        {
-                            AdminDashboard(standardAdmin, customers);
-                        }
-                        else if (loggedInUser is Customer standardCustomer)
-                        {
-                            CustomerDashboard(standardCustomer, customers, ref accountCounter);
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("\nLogin Failed! Invalid credentials.");
-                        Console.ReadKey();
-                    }
-                    break;
-
-                case "7":
-                    running = false;
-                    Console.WriteLine("\nStarting Web Host Server backend...");
-                    break;
-            }
-        }
-
-        app.Run();
+        return new BankingSeedData(users, customers, accountCounter);
     }
 
     // ========================================================
@@ -371,6 +410,22 @@ public class Program
             }
         }
     }
+}
+
+public sealed class BankingSeedData
+{
+    public BankingSeedData(List<User> users, List<Customer> customers, int accountCounter)
+    {
+        Users = users;
+        Customers = customers;
+        AccountCounter = accountCounter;
+    }
+
+    public List<User> Users { get; }
+
+    public List<Customer> Customers { get; }
+
+    public int AccountCounter;
 }
 
 public sealed record AddNumbersResponse(int A, int B, int Result);
