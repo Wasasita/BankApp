@@ -1,6 +1,19 @@
+# Build outputs
 bin/
 obj/
+
+# Frontend/Node dependencies
 node_modules/
 dist/
-.vscode/.ropeproject/
+
+# IDE / Editor environments
+.vscode/
+
+# OS-specific files
 .DS_Store
+Thumbs.db
+
+# .NET User Secrets and local configuration
+appsettings.Development.json
+*.user
+*.suo
