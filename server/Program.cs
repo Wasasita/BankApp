@@ -5,8 +5,8 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        WebApplication app = BuildWebApplication(args);
         BankingSeedData bankingData = SeedTestData();
+        WebApplication app = BuildWebApplication(args, bankingData.Customers);
 
         ShowStartupScreen();
         RunMainMenu(bankingData);
@@ -14,11 +14,14 @@ public class Program
         StartWebServer(app);
     }
 
-    private static WebApplication BuildWebApplication(string[] args)
+    private static WebApplication BuildWebApplication(string[] args, List<Customer> customers)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+        builder.Services.AddControllers();
         builder.Services.AddSingleton<AddNumbersService>();
+        builder.Services.AddSingleton<Repositories.ICustomerRepository>(new Repositories.CustomerRepository(customers));
+        builder.Services.AddScoped<ICustomerService, CustomerService>();
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("Frontend", policy =>
@@ -31,6 +34,7 @@ public class Program
 
         WebApplication app = builder.Build();
         app.UseCors("Frontend");
+        app.MapControllers();
 
         ConfigureWebApiEndpoints(app);
 
