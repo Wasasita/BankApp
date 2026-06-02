@@ -16,6 +16,18 @@ namespace BankingAPI.Controllers
             _customerService = customerService;
         }
 
+        // this is an endpoint I added myself called total-balance that calculates the total balance of all accounts for a given customer
+        [HttpGet("{id}/total-balance")]
+        public ActionResult GetCustomerTotalBalance(int id)
+        {
+            var totalBalance = _customerService.GetCustomerTotalBalance(id);
+
+            if (totalBalance == null)
+                return NotFound(new { message = "Customer not found" });
+
+            return Ok(new { CustomerId = id, TotalBalance = totalBalance });
+        }
+
         [HttpGet]
         public ActionResult<IEnumerable<Customer>> GetAllCustomers()
         {

@@ -5,6 +5,17 @@ namespace BankingAPI.Services
 {
     public class CustomerService
     {
+        // total balance service method 
+        public decimal? GetCustomerTotalBalance(int id)
+        {
+            var customer = GetCustomerById(id);
+
+            if (customer == null)
+                return null;
+
+            return customer.Accounts.Sum(a => a.Balance);
+        }
+
         public IEnumerable<Customer> GetAllCustomers()
         {
             return DataStore.Customers;
