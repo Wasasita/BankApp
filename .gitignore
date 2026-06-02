@@ -1,0 +1,38 @@
+# Build outputs
+bin/
+obj/
+**/bin/
+**/obj/
+
+# Visual Studio / IDE artifacts
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.slnLaunch
+
+# Rider / ReSharper
+.idea/
+*.DotSettings.user
+
+# Logs / temp files
+*.log
+*.tmp
+*.cache
+*.pid
+*.seed
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local environment files
+.env
+.env.*
+*.local
+
+# GitHub project files requested to ignore
+.github/
