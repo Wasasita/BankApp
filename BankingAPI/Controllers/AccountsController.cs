@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using BankingAPI.Data;
 using BankingAPI.Models;
+using BankingAPI.Services;
 using System.Linq;
 
 namespace BankingAPI.Controllers
@@ -9,19 +9,26 @@ namespace BankingAPI.Controllers
     [Route("api/[controller]")]
     public class AccountsController : ControllerBase
     {
+        private readonly AccountService _accountService;
+
+        public AccountsController(AccountService accountService)
+        {
+            _accountService = accountService;
+        }
+
         //Step 4: Implement GET (HttpGet) Endpoints (Read):
         // Start with simple endpoints like GetAllCustomers and GetCustomerById.
         [HttpGet]
         public ActionResult<IEnumerable<Account>> GetAllAccounts()
         {
-            return Ok(DataStore.Accounts);
+            return Ok(_accountService.GetAllAccounts());
         }
 
         [HttpGet("{id}")]
         public ActionResult<Account> GetAccountById(int id)
         {
-            var account = DataStore.Accounts.FirstOrDefault(a => a.Id == id);
-            if (account == null) // if ID does not exist, API responds with a standard 404 Not Found HTTP instead of a generic server crash.
+            var account = _accountService.GetAccountById(id);
+            if (account == null)
                 return NotFound(new { message = "Account not found" });
             return Ok(account);
         }
@@ -30,45 +37,26 @@ namespace BankingAPI.Controllers
         [HttpGet("search")]
         public ActionResult<IEnumerable<Account>> GetAccountByName([FromQuery] string name)
         {
-            if (string.IsNullOrWhiteSpace(name))
-                return Ok(DataStore.Accounts);
-
-            var accounts = DataStore.Customers
-                .Where(c => c.Name.Contains(name, System.StringComparison.OrdinalIgnoreCase))
-                .SelectMany(c => c.Accounts)
-                .ToList();
-
-            return Ok(accounts);
+            return Ok(_accountService.GetAccountByName(name));
         }
 
         //Step 6: Implement POST (HttpPost), PUT(HttpPut), and DELETE(HttpDelete) Endpoints (Write/Mutate): 
         [HttpPost]
         public ActionResult<Account> CreateAccount([FromQuery] int customerId, [FromBody] Account account)
         {
-            var customer = DataStore.Customers.FirstOrDefault(c => c.Id == customerId);
-            if (customer == null)
+            var created = _accountService.CreateAccount(customerId, account);
+            if (created == null)
                 return NotFound(new { message = "Customer not found" });
 
-            // Ensure you assign a new unique identifier (ID) when a new item is pushed into the collection.
-            var newId = DataStore.Accounts.Any() ? DataStore.Accounts.Max(a => a.Id) + 1 : 1;
-            account.Id = newId;
-
-            DataStore.Accounts.Add(account);
-            customer.Accounts.Add(account);
-
-            return CreatedAtAction(nameof(GetAccountById), new { id = account.Id }, account);
+            return CreatedAtAction(nameof(GetAccountById), new { id = created.Id }, created);
         }
 
         [HttpPut("{id}")]
         public ActionResult UpdateAccount(int id, [FromBody] Account update)
         {
-            var existing = DataStore.Accounts.FirstOrDefault(a => a.Id == id);
+            var existing = _accountService.UpdateAccount(id, update);
             if (existing == null)
                 return NotFound(new { message = "Account not found" });
-
-            existing.AccountNumber = update.AccountNumber;
-            existing.AccountType = update.AccountType;
-            existing.Balance = update.Balance;
 
             return Ok(existing);
         }
@@ -76,13 +64,9 @@ namespace BankingAPI.Controllers
         [HttpDelete("{id}")]
         public ActionResult DeleteAccount(int id)
         {
-            var acc = DataStore.Accounts.FirstOrDefault(a => a.Id == id);
-            if (acc == null)
+            var deleted = _accountService.DeleteAccount(id);
+            if (!deleted)
                 return NotFound(new { message = "Account not found" });
-
-            DataStore.Accounts.Remove(acc);
-            foreach (var c in DataStore.Customers)
-                c.Accounts.RemoveAll(a => a.Id == id);
 
             return NoContent();
         }
