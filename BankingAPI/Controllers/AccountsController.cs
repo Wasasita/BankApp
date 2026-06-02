@@ -10,10 +10,16 @@ namespace BankingAPI.Controllers
     public class AccountsController : ControllerBase
     {
         private readonly AccountService _accountService;
+        private CustomerService? service;
 
         public AccountsController(AccountService accountService)
         {
             _accountService = accountService;
+        }
+
+        public AccountsController(CustomerService service)
+        {
+            this.service = service;
         }
 
         //Step 4: Implement GET (HttpGet) Endpoints (Read):
