@@ -49,6 +49,12 @@ namespace BankingAPI.Controllers
             return Ok(_customerService.GetCustomerByName(name));
         }
 
+        [HttpGet("search-by-email")]
+        public ActionResult<IEnumerable<Customer>> GetCustomerByEmail([FromQuery] string email)
+        {
+            return Ok(_customerService.GetCustomerByEmail(email));
+        }
+
         [HttpGet("premium")]
         public ActionResult<IEnumerable<Customer>> GetAllPremiumCustomers([FromQuery] decimal? threshold)
         {
@@ -59,6 +65,11 @@ namespace BankingAPI.Controllers
         public ActionResult<Customer> CreateCustomer([FromBody] Customer customer)
         {
             var created = _customerService.CreateCustomer(customer);
+
+            if (created == null){
+                return BadRequest(new { message = "Customer with this email already exists"});
+            }
+
             return CreatedAtAction(nameof(GetCustomerById), new { id = customer.Id }, customer);
         }
 

@@ -36,6 +36,17 @@ namespace BankingAPI.Services
                 .ToList();
         }
 
+        // NEW
+        public IEnumerable<Customer> GetCustomerByEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return DataStore.Customers;
+
+            return DataStore.Customers
+                .Where(c => c.Email.Contains(email, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
         //Step 5: Implement Filtered Logic (Premium Customers): For GetAllPremiumCustomers, implement
         // a filtering mechanism using loops or query expressions (e.g., LINQ, Streams, or array filters) to
         // calculate if the balance exceeds your defined numeric threshold (e.g., $10,000)
@@ -47,8 +58,15 @@ namespace BankingAPI.Services
                 .ToList();
         }
 
-        public Customer CreateCustomer(Customer customer)
+        public Customer? CreateCustomer(Customer customer)
         {
+            // check duplicate email
+            if (DataStore.Customers.Any(c =>
+                c.Email.Equals(customer.Email, StringComparison.OrdinalIgnoreCase)))
+            {
+                return null;
+            }
+
             var newId = DataStore.Customers.Any() ? DataStore.Customers.Max(c => c.Id) + 1 : 1;
             customer.Id = newId;
             customer.Accounts = customer.Accounts ?? new List<Account>();
