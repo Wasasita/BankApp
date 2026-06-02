@@ -2,10 +2,6 @@
 bin/
 obj/
 
-# Frontend/Node dependencies
-node_modules/
-dist/
-
 # IDE / Editor environments
 .vscode/
 
