@@ -1,51 +1,13 @@
-using Backend.Api.Services;
 using Backend.Api.Models;
 
 public class Program
 {
     public static void Main(string[] args)
     {
-        WebApplication app = BuildWebApplication(args);
         BankingSeedData bankingData = SeedTestData();
 
         ShowStartupScreen();
         RunMainMenu(bankingData);
-
-        StartWebServer(app);
-    }
-
-    private static WebApplication BuildWebApplication(string[] args)
-    {
-        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-
-        builder.Services.AddSingleton<AddNumbersService>();
-        builder.Services.AddCors(options =>
-        {
-            options.AddPolicy("Frontend", policy =>
-            {
-                policy.WithOrigins("http://localhost:5173")
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
-            });
-        });
-
-        WebApplication app = builder.Build();
-        app.UseCors("Frontend");
-
-        ConfigureWebApiEndpoints(app);
-
-        return app;
-    }
-
-    private static void ConfigureWebApiEndpoints(WebApplication app)
-    {
-        app.MapGet("/api/add", (int a, int b, AddNumbersService service) =>
-        {
-            int result = service.Add(a, b);
-            return Results.Ok(new AddNumbersResponse(a, b, result));
-        });
-
-        app.MapGet("/api/welcome", () => Results.Ok(new { Message = "Hello, World!" }));
     }
 
     private static void ShowStartupScreen()
@@ -74,7 +36,7 @@ public class Program
 
                 case "7":
                     running = false;
-                    Console.WriteLine("\nStarting Web Host Server backend...");
+                    Console.WriteLine("\nExiting CitiBank console app...");
                     break;
             }
         }
@@ -85,7 +47,7 @@ public class Program
         Console.Clear();
         Console.WriteLine("=== MASTER BANKING MENU ===");
         Console.WriteLine("1) Login to Account Dashboard");
-        Console.WriteLine("7) Stop Menu & Start Web Server");
+        Console.WriteLine("7) Exit Application");
         Console.Write("Select an option: ");
 
         return Console.ReadLine() ?? "";
@@ -110,11 +72,6 @@ public class Program
         {
             CustomerDashboard(standardCustomer, bankingData.Customers, ref bankingData.AccountCounter);
         }
-    }
-
-    private static void StartWebServer(WebApplication app)
-    {
-        app.Run();
     }
 
     private static BankingSeedData SeedTestData()
@@ -427,5 +384,3 @@ public sealed class BankingSeedData
 
     public int AccountCounter;
 }
-
-public sealed record AddNumbersResponse(int A, int B, int Result);
