@@ -1,20 +1,10 @@
-using BankingAPI.Data;
-using BankingAPI.Repositories;
-using BankingAPI.Services;
-using Microsoft.Extensions.Options;
-
 var builder = WebApplication.CreateBuilder(args);
 
-DotNetEnv.Env.Load();
 // Add services to the container.
 
-builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDbSettings"));
-
 builder.Services.AddControllers();
-builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
-builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-builder.Services.AddScoped<CustomerService>();
-builder.Services.AddScoped<AccountService>();
+builder.Services.AddScoped<BankingAPI.Services.CustomerService>();
+builder.Services.AddScoped<BankingAPI.Services.AccountService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

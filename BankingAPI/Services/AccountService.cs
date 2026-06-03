@@ -1,71 +1,70 @@
-using BankingAPI.Repositories;
+using BankingAPI.Data;
 using BankingAPI.Models;
 
 namespace BankingAPI.Services
 {
     public class AccountService
     {
-        private readonly IAccountRepository _accountRepository;
-        private readonly ICustomerRepository _customerRepository;
-
-        public AccountService(IAccountRepository accountRepository, ICustomerRepository customerRepository)
+        public IEnumerable<Account> GetAllAccounts()
         {
-            _accountRepository = accountRepository;
-            _customerRepository = customerRepository;
+            return DataStore.Accounts;
         }
 
-        public async Task<IEnumerable<Account>> GetAllAccountsAsync()
+        public Account? GetAccountById(int id)
         {
-            return await _accountRepository.GetAllAsync();
+            return DataStore.Accounts.FirstOrDefault(a => a.Id == id);
         }
 
-        public async Task<Account?> GetAccountByIdAsync(int id)
-        {
-            return await _accountRepository.GetByIdAsync(id);
-        }
-
-        public async Task<IEnumerable<Account>> GetAccountByNameAsync(string name)
+        public IEnumerable<Account> GetAccountByName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
-                return await GetAllAccountsAsync();
+                return DataStore.Accounts;
 
-            var customers = await _customerRepository.GetAllAsync();
-            var matchingCustomerIds = customers
+            return DataStore.Customers
                 .Where(c => c.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
-                .Select(c => c.Id)
+                .SelectMany(c => c.Accounts)
                 .ToList();
-
-            var accounts = new List<Account>();
-
-            foreach (var customerId in matchingCustomerIds)
-            {
-                accounts.AddRange(await _accountRepository.GetByCustomerIdAsync(customerId));
-            }
-
-            return accounts;
         }
 
-        public async Task<Account?> CreateAccountAsync(int customerId, Account account)
+        public Account? CreateAccount(int customerId, Account account)
         {
-            var customer = await _customerRepository.GetByIdAsync(customerId);
+            var customer = DataStore.Customers.FirstOrDefault(c => c.Id == customerId);
             if (customer == null)
                 return null;
 
-            return await _accountRepository.CreateAsync(customerId, account);
+            var newId = DataStore.Accounts.Any() ? DataStore.Accounts.Max(a => a.Id) + 1 : 1;
+            account.Id = newId;
+
+            DataStore.Accounts.Add(account);
+            customer.Accounts.Add(account);
+
+            return account;
         }
 
-        public async Task<Account?> UpdateAccountAsync(int id, Account update)
+        public Account? UpdateAccount(int id, Account update)
         {
-            var existing = await _accountRepository.GetByIdAsync(id);
+            var existing = GetAccountById(id);
             if (existing == null)
                 return null;
 
-            return await _accountRepository.UpdateAsync(id, update);
+            existing.AccountNumber = update.AccountNumber;
+            existing.AccountType = update.AccountType;
+            existing.Balance = update.Balance;
+
+            return existing;
         }
 
-        public async Task<bool> DeleteAccountAsync(int id)
+        public bool DeleteAccount(int id)
         {
-            return await _accountRepository.DeleteAsync(id);
+            var account = GetAccountById(id);
+            if (account == null)
+                return false;
+
+            DataStore.Accounts.Remove(account);
+            foreach (var customer in DataStore.Customers)
+                customer.Accounts.RemoveAll(a => a.Id == id);
+
+            return true;
         }
     }
 }

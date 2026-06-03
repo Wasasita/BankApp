@@ -1,0 +1,77 @@
+@BankingAPI_HostAddress = http://localhost:5092
+
+### 1. Get all customers
+GET {{BankingAPI_HostAddress}}/api/customers
+Accept: application/json
+
+### 2. Get customer by id
+GET {{BankingAPI_HostAddress}}/api/customers/1
+Accept: application/json
+
+### 3. Search customers by name
+GET {{BankingAPI_HostAddress}}/api/customers/search?name=Alice
+Accept: application/json
+
+### 4. Get premium customers
+GET {{BankingAPI_HostAddress}}/api/customers/premium?threshold=10000
+Accept: application/json
+
+### 5. Create customer
+POST {{BankingAPI_HostAddress}}/api/customers
+Content-Type: application/json
+
+{
+	"name": "David Lee",
+	"email": "david.lee@example.com",
+	"accounts": []
+}
+
+### 6. Update customer
+PUT {{BankingAPI_HostAddress}}/api/customers/1
+Content-Type: application/json
+
+{
+	"name": "Alice Johnson Updated",
+	"email": "alice.updated@example.com",
+	"accounts": []
+}
+
+### 7. Delete customer
+DELETE {{BankingAPI_HostAddress}}/api/customers/3
+
+### 8. Get all accounts
+GET {{BankingAPI_HostAddress}}/api/accounts
+Accept: application/json
+
+### 9. Get account by id
+GET {{BankingAPI_HostAddress}}/api/accounts/1
+Accept: application/json
+
+### 10. Search accounts by customer name
+GET {{BankingAPI_HostAddress}}/api/accounts/search?name=Alice
+Accept: application/json
+
+### 11. Create account for customer
+POST {{BankingAPI_HostAddress}}/api/accounts
+Content-Type: application/json
+
+{
+	"customerId": 1,
+	"accountNumber": "10000005",
+	"accountType": "Savings",
+	"balance": 2500.00
+}
+
+### 12. Update account
+PUT {{BankingAPI_HostAddress}}/api/accounts/1
+Content-Type: application/json
+
+{
+	"id": 1,
+	"accountNumber": "10000001",
+	"accountType": "Checking",
+	"balance": 1500.00
+}
+
+### 13. Delete account
+DELETE {{BankingAPI_HostAddress}}/api/accounts/4

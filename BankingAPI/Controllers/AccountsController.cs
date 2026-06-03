@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using BankingAPI.Models;
 using BankingAPI.Services;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace BankingAPI.Controllers
 { 
@@ -11,24 +10,30 @@ namespace BankingAPI.Controllers
     public class AccountsController : ControllerBase
     {
         private readonly AccountService _accountService;
+        private CustomerService? service;
 
         public AccountsController(AccountService accountService)
         {
             _accountService = accountService;
         }
 
+        public AccountsController(CustomerService service)
+        {
+            this.service = service;
+        }
+
         //Step 4: Implement GET (HttpGet) Endpoints (Read):
         // Start with simple endpoints like GetAllCustomers and GetCustomerById.
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Account>>> GetAllAccounts()
+        public ActionResult<IEnumerable<Account>> GetAllAccounts()
         {
-            return Ok(await _accountService.GetAllAccountsAsync());
+            return Ok(_accountService.GetAllAccounts());
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Account>> GetAccountById(int id)
+        public ActionResult<Account> GetAccountById(int id)
         {
-            var account = await _accountService.GetAccountByIdAsync(id);
+            var account = _accountService.GetAccountById(id);
             if (account == null)
                 return NotFound(new { message = "Account not found" });
             return Ok(account);
@@ -36,16 +41,16 @@ namespace BankingAPI.Controllers
 
         // api/accounts/search?name={name}
         [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<Account>>> GetAccountByName([FromQuery] string name)
+        public ActionResult<IEnumerable<Account>> GetAccountByName([FromQuery] string name)
         {
-            return Ok(await _accountService.GetAccountByNameAsync(name));
+            return Ok(_accountService.GetAccountByName(name));
         }
 
         //Step 6: Implement POST (HttpPost), PUT(HttpPut), and DELETE(HttpDelete) Endpoints (Write/Mutate): 
         [HttpPost]
-        public async Task<ActionResult<Account>> CreateAccount([FromQuery] int customerId, [FromBody] Account account)
+        public ActionResult<Account> CreateAccount([FromQuery] int customerId, [FromBody] Account account)
         {
-            var created = await _accountService.CreateAccountAsync(customerId, account);
+            var created = _accountService.CreateAccount(customerId, account);
             if (created == null)
                 return NotFound(new { message = "Customer not found" });
 
@@ -53,9 +58,9 @@ namespace BankingAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateAccount(int id, [FromBody] Account update)
+        public ActionResult UpdateAccount(int id, [FromBody] Account update)
         {
-            var existing = await _accountService.UpdateAccountAsync(id, update);
+            var existing = _accountService.UpdateAccount(id, update);
             if (existing == null)
                 return NotFound(new { message = "Account not found" });
 
@@ -63,9 +68,9 @@ namespace BankingAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteAccount(int id)
+        public ActionResult DeleteAccount(int id)
         {
-            var deleted = await _accountService.DeleteAccountAsync(id);
+            var deleted = _accountService.DeleteAccount(id);
             if (!deleted)
                 return NotFound(new { message = "Account not found" });
 
