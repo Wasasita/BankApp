@@ -1,102 +1,55 @@
-using BankingAPI.Data;
 using BankingAPI.Models;
+using BankingAPI.Repositories;
 
-namespace BankingAPI.Services
+namespace BankingAPI.Services;
+
+public class CustomerService
 {
-    public class CustomerService
+    private readonly ICustomerRepository _customerRepo;
+    private readonly IAccountRepository _accountRepo;
+
+    public CustomerService(ICustomerRepository customerRepo, IAccountRepository accountRepo)
     {
-        // total balance service method 
-        public decimal? GetCustomerTotalBalance(int id)
-        {
-            var customer = GetCustomerById(id);
-
-            if (customer == null)
-                return null;
-
-            return customer.Accounts.Sum(a => a.Balance);
-        }
-
-        public IEnumerable<Customer> GetAllCustomers()
-        {
-            return DataStore.Customers;
-        }
-
-        public Customer? GetCustomerById(int id)
-        {
-            return DataStore.Customers.FirstOrDefault(c => c.Id == id);
-        }
-
-        public IEnumerable<Customer> GetCustomerByName(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-                return DataStore.Customers;
-
-            return DataStore.Customers
-                .Where(c => c.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        }
-
-        // NEW
-        public IEnumerable<Customer> GetCustomerByEmail(string email)
-        {
-            if (string.IsNullOrWhiteSpace(email))
-                return DataStore.Customers;
-
-            return DataStore.Customers
-                .Where(c => c.Email.Contains(email, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        }
-
-        //Step 5: Implement Filtered Logic (Premium Customers): For GetAllPremiumCustomers, implement
-        // a filtering mechanism using loops or query expressions (e.g., LINQ, Streams, or array filters) to
-        // calculate if the balance exceeds your defined numeric threshold (e.g., $10,000)
-        public IEnumerable<Customer> GetAllPremiumCustomers(decimal? threshold)
-        {
-            decimal t = threshold ?? 10000m;
-            return DataStore.Customers
-                .Where(c => c.Accounts.Sum(a => a.Balance) > t)
-                .ToList();
-        }
-
-        public Customer? CreateCustomer(Customer customer)
-        {
-            // check duplicate email
-            if (DataStore.Customers.Any(c =>
-                c.Email.Equals(customer.Email, StringComparison.OrdinalIgnoreCase)))
-            {
-                return null;
-            }
-
-            var newId = DataStore.Customers.Any() ? DataStore.Customers.Max(c => c.Id) + 1 : 1;
-            customer.Id = newId;
-            customer.Accounts = customer.Accounts ?? new List<Account>();
-            DataStore.Customers.Add(customer);
-            return customer;
-        }
-
-        public Customer? UpdateCustomer(int id, Customer update)
-        {
-            var existing = GetCustomerById(id);
-            if (existing == null)
-                return null;
-
-            existing.Name = update.Name;
-            existing.Email = update.Email;
-            return existing;
-        }
-
-        public bool DeleteCustomer(int id)
-        {
-            var customer = GetCustomerById(id);
-            if (customer == null)
-                return false;
-
-            var accountIds = customer.Accounts.Select(a => a.Id).ToList();
-            DataStore.Accounts.RemoveAll(a => accountIds.Contains(a.Id));
-            customer.Accounts.Clear();
-            DataStore.Customers.Remove(customer);
-
-            return true;
-        }
+        _customerRepo = customerRepo;
+        _accountRepo = accountRepo;
     }
+
+    public Task<List<Customer>> GetAllCustomers()
+        => _customerRepo.GetAllAsync();
+
+    public Task<Customer?> GetCustomerById(int id)
+        => _customerRepo.GetByIdAsync(id);
+
+    public Task<List<Customer>> GetCustomerByName(string name)
+        => _customerRepo.GetAllAsync();
+
+    public Task<List<Customer>> GetCustomerByEmail(string email)
+        => _customerRepo.GetAllAsync();
+
+    public async Task<decimal?> GetCustomerTotalBalance(int id)
+    {
+        var customer = await _customerRepo.GetByIdAsync(id);
+        if (customer == null) return null;
+
+        return customer.Accounts.Sum(a => a.Balance);
+    }
+
+    public async Task<List<Customer>> GetAllPremiumCustomers(decimal? threshold)
+    {
+        var customers = await _customerRepo.GetAllAsync();
+        var t = threshold ?? 10000m;
+
+        return customers
+            .Where(c => c.Accounts.Sum(a => a.Balance) > t)
+            .ToList();
+    }
+
+    public Task<Customer> CreateCustomer(Customer customer)
+        => _customerRepo.CreateAsync(customer);
+
+    public Task<Customer?> UpdateCustomer(int id, Customer update)
+        => _customerRepo.UpdateAsync(id, update);
+
+    public Task<bool> DeleteCustomer(int id)
+        => _customerRepo.DeleteAsync(id);
 }

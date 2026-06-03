@@ -1,8 +1,8 @@
-using System.Collections.Generic;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace BankingAPI.Models
 {
-    // Step2: Customer Model: Should include fields like Id, Name, Email, and a collection/list of associated Accounts
+    [BsonIgnoreExtraElements]
     public class Customer
     {
         public int Id { get; set; }
@@ -11,6 +11,6 @@ namespace BankingAPI.Models
 
         public string Email { get; set; } = string.Empty;
 
-        public List<Account> Accounts { get; set; } = new List<Account>();
+        public List<Account> Accounts { get; set; } = new();
     }
 }

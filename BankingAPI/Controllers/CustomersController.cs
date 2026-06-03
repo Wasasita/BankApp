@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using BankingAPI.Models;
 using BankingAPI.Services;
-using System.Linq;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace BankingAPI.Controllers
 {
@@ -16,11 +17,11 @@ namespace BankingAPI.Controllers
             _customerService = customerService;
         }
 
-        // this is an endpoint I added myself called total-balance that calculates the total balance of all accounts for a given customer
         [HttpGet("{id}/total-balance")]
-        public ActionResult GetCustomerTotalBalance(int id)
+        public async Task<ActionResult> GetCustomerTotalBalance(int id)
         {
-            var totalBalance = _customerService.GetCustomerTotalBalance(id);
+            // Added await
+            var totalBalance = await _customerService.GetCustomerTotalBalance(id);
 
             if (totalBalance == null)
                 return NotFound(new { message = "Customer not found" });
@@ -29,44 +30,55 @@ namespace BankingAPI.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Customer>> GetAllCustomers()
+        public async Task<ActionResult<IEnumerable<Customer>>> GetAllCustomers()
         {
-            return Ok(_customerService.GetAllCustomers());
+            // Added await
+            var customers = await _customerService.GetAllCustomers();
+            return Ok(customers);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Customer> GetCustomerById(int id)
+        public async Task<ActionResult<Customer>> GetCustomerById(int id)
         {
-            var customer = _customerService.GetCustomerById(id);
+            // Added await
+            var customer = await _customerService.GetCustomerById(id);
             if (customer == null)
                 return NotFound(new { message = "Customer not found" });
             return Ok(customer);
         }
 
         [HttpGet("search")]
-        public ActionResult<IEnumerable<Customer>> GetCustomerByName([FromQuery] string name)
+        public async Task<ActionResult<IEnumerable<Customer>>> GetCustomerByName([FromQuery] string name)
         {
-            return Ok(_customerService.GetCustomerByName(name));
+            // Added await
+            var customers = await _customerService.GetCustomerByName(name);
+            return Ok(customers);
         }
 
         [HttpGet("search-by-email")]
-        public ActionResult<IEnumerable<Customer>> GetCustomerByEmail([FromQuery] string email)
+        public async Task<ActionResult<IEnumerable<Customer>>> GetCustomerByEmail([FromQuery] string email)
         {
-            return Ok(_customerService.GetCustomerByEmail(email));
+            // Added await
+            var customers = await _customerService.GetCustomerByEmail(email);
+            return Ok(customers);
         }
 
         [HttpGet("premium")]
-        public ActionResult<IEnumerable<Customer>> GetAllPremiumCustomers([FromQuery] decimal? threshold)
+        public async Task<ActionResult<IEnumerable<Customer>>> GetAllPremiumCustomers([FromQuery] decimal? threshold)
         {
-            return Ok(_customerService.GetAllPremiumCustomers(threshold));
+            // Added await
+            var customers = await _customerService.GetAllPremiumCustomers(threshold);
+            return Ok(customers);
         }
 
         [HttpPost]
-        public ActionResult<Customer> CreateCustomer([FromBody] Customer customer)
+        public async Task<ActionResult<Customer>> CreateCustomer([FromBody] Customer customer)
         {
-            var created = _customerService.CreateCustomer(customer);
+            // Added await
+            var created = await _customerService.CreateCustomer(customer);
 
-            if (created == null){
+            if (created == null)
+            {
                 return BadRequest(new { message = "Customer with this email already exists"});
             }
 
@@ -74,9 +86,10 @@ namespace BankingAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public ActionResult UpdateCustomer(int id, [FromBody] Customer update)
+        public async Task<ActionResult> UpdateCustomer(int id, [FromBody] Customer update)
         {
-            var existing = _customerService.UpdateCustomer(id, update);
+            // Added await
+            var existing = await _customerService.UpdateCustomer(id, update);
             if (existing == null)
                 return NotFound(new { message = "Customer not found" });
 
@@ -84,9 +97,9 @@ namespace BankingAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        public ActionResult DeleteCustomer(int id)
+        public async Task<ActionResult> DeleteCustomer(int id)
         {
-            var deleted = _customerService.DeleteCustomer(id);
+            var deleted = await _customerService.DeleteCustomer(id);
             if (!deleted)
                 return NotFound(new { message = "Customer not found" });
 

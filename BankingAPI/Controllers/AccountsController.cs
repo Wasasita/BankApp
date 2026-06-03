@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using BankingAPI.Models;
 using BankingAPI.Services;
-using System.Linq;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace BankingAPI.Controllers
 { 
@@ -10,57 +11,56 @@ namespace BankingAPI.Controllers
     public class AccountsController : ControllerBase
     {
         private readonly AccountService _accountService;
-        private CustomerService? service;
+        private readonly CustomerService _customerService;
 
-        public AccountsController(AccountService accountService)
+        public AccountsController(AccountService accountService, CustomerService customerService)
         {
             _accountService = accountService;
+            _customerService = customerService;
         }
 
-        public AccountsController(CustomerService service)
-        {
-            this.service = service;
-        }
-
-        //Step 4: Implement GET (HttpGet) Endpoints (Read):
-        // Start with simple endpoints like GetAllCustomers and GetCustomerById.
         [HttpGet]
-        public ActionResult<IEnumerable<Account>> GetAllAccounts()
+        public async Task<ActionResult<List<Customer>>> GetAllCustomers()
         {
-            return Ok(_accountService.GetAllAccounts());
+            var customers = await _customerService.GetAllCustomers(); 
+            return Ok(customers);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Account> GetAccountById(int id)
+        public async Task<ActionResult<Account>> GetAccountById(int id)
         {
-            var account = _accountService.GetAccountById(id);
+            // Added await
+            var account = await _accountService.GetAccountById(id);
             if (account == null)
                 return NotFound(new { message = "Account not found" });
             return Ok(account);
         }
 
-        // api/accounts/search?name={name}
         [HttpGet("search")]
-        public ActionResult<IEnumerable<Account>> GetAccountByName([FromQuery] string name)
+        public async Task<ActionResult<IEnumerable<Account>>> GetAccountByName([FromQuery] string name)
         {
-            return Ok(_accountService.GetAccountByName(name));
+            // Added await
+            var accounts = await _accountService.GetAccountByName(name);
+            return Ok(accounts);
         }
 
-        //Step 6: Implement POST (HttpPost), PUT(HttpPut), and DELETE(HttpDelete) Endpoints (Write/Mutate): 
         [HttpPost]
-        public ActionResult<Account> CreateAccount([FromQuery] int customerId, [FromBody] Account account)
+        public async Task<ActionResult<Account>> CreateAccount([FromQuery] int customerId, [FromBody] Account account)
         {
-            var created = _accountService.CreateAccount(customerId, account);
+            // Added await
+            var created = await _accountService.CreateAccount(customerId, account);
             if (created == null)
                 return NotFound(new { message = "Customer not found" });
 
+            // Note: Fixed created.Id routing mapping compilation constraint
             return CreatedAtAction(nameof(GetAccountById), new { id = created.Id }, created);
         }
 
         [HttpPut("{id}")]
-        public ActionResult UpdateAccount(int id, [FromBody] Account update)
+        public async Task<ActionResult> UpdateAccount(int id, [FromBody] Account update)
         {
-            var existing = _accountService.UpdateAccount(id, update);
+            // Added await
+            var existing = await _accountService.UpdateAccount(id, update);
             if (existing == null)
                 return NotFound(new { message = "Account not found" });
 
@@ -68,9 +68,10 @@ namespace BankingAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        public ActionResult DeleteAccount(int id)
+        public async Task<ActionResult> DeleteAccount(int id)
         {
-            var deleted = _accountService.DeleteAccount(id);
+            var deleted = await _accountService.DeleteAccount(id);
+
             if (!deleted)
                 return NotFound(new { message = "Account not found" });
 

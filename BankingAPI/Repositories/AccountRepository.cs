@@ -11,31 +11,27 @@ public class AccountRepository : IAccountRepository
 
     public AccountRepository(IOptions<MongoDbSettings> settings)
     {
-        var mongoClient = new MongoClient(settings.Value.ConnectionString);
-        var database = mongoClient.GetDatabase(settings.Value.DatabaseName);
-
-        _accounts = database.GetCollection<Account>(settings.Value.AccountsCollectionName);
+        var client = new MongoClient(settings.Value.ConnectionString);
+        var db = client.GetDatabase(settings.Value.DatabaseName);
+        _accounts = db.GetCollection<Account>(settings.Value.AccountsCollectionName);
     }
 
     public async Task<List<Account>> GetAllAsync()
-    {
-        return await _accounts.Find(_ => true).ToListAsync();
-    }
+        => await _accounts.Find(_ => true).ToListAsync();
 
     public async Task<Account?> GetByIdAsync(int id)
-    {
-        return await _accounts.Find(account => account.Id == id).FirstOrDefaultAsync();
-    }
+        => await _accounts.Find(a => a.Id == id).FirstOrDefaultAsync();
 
     public async Task<List<Account>> GetByCustomerIdAsync(int customerId)
-    {
-        return await _accounts.Find(account => account.CustomerId == customerId).ToListAsync();
-    }
+        => await _accounts.Find(a => a.CustomerId == customerId).ToListAsync();
 
     public async Task<Account> CreateAsync(int customerId, Account account)
     {
-        var lastAccount = await _accounts.Find(_ => true).SortByDescending(a => a.Id).FirstOrDefaultAsync();
-        account.Id = lastAccount == null ? 1 : lastAccount.Id + 1;
+        var last = await _accounts.Find(_ => true)
+            .SortByDescending(a => a.Id)
+            .FirstOrDefaultAsync();
+
+        account.Id = last == null ? 1 : last.Id + 1;
         account.CustomerId = customerId;
 
         await _accounts.InsertOneAsync(account);
@@ -45,25 +41,24 @@ public class AccountRepository : IAccountRepository
     public async Task<Account?> UpdateAsync(int id, Account account)
     {
         var existing = await GetByIdAsync(id);
-        if (existing == null)
-            return null;
+        if (existing == null) return null;
 
         account.Id = id;
         account.CustomerId = existing.CustomerId;
 
-        await _accounts.ReplaceOneAsync(existingAccount => existingAccount.Id == id, account);
+        await _accounts.ReplaceOneAsync(x => x.Id == id, account);
         return account;
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var result = await _accounts.DeleteOneAsync(account => account.Id == id);
+        var result = await _accounts.DeleteOneAsync(x => x.Id == id);
         return result.DeletedCount > 0;
     }
 
     public async Task<bool> DeleteByCustomerIdAsync(int customerId)
     {
-        var result = await _accounts.DeleteManyAsync(account => account.CustomerId == customerId);
+        var result = await _accounts.DeleteManyAsync(x => x.CustomerId == customerId);
         return result.DeletedCount > 0;
     }
 }
