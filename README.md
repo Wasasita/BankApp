@@ -4,6 +4,12 @@ dotnet run --project BankingAPI/BankingAPI.csproj
 
 or press play/excecute from the Program.cs file
 
+## after adding mongo db, we now need to run in terminal:
+
+$env:MongoDbSettings__ConnectionString="your_local_or_atlas_connection"
+$env:MongoDbSettings__DatabaseName="BankApp"
+dotnet run
+
 ## for the tests
 dotnet new xunit -n BankingAPI.Tests
 
