@@ -79,6 +79,7 @@ export default function Data() {
 
           <div>
             <p className="customer-name">{c.name}</p>
+            <p>{c.email}</p>
           </div>
 
           <div className="customer-id">{c.id}</div>
