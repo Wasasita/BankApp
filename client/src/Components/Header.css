@@ -1,0 +1,14 @@
+.site-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  max-width:1100px;
+  margin:0 auto;
+  padding:14px 20px;
+}
+.brand h1{margin:0;font-size:20px}
+.header-nav ul{list-style:none;margin:0;padding:0;display:flex;gap:14px;align-items:center}
+.header-nav a{color:var(--muted);text-decoration:none;padding:8px 10px;border-radius:8px}
+.header-nav a:hover{color:var(--text);background:rgba(11,116,222,0.04)}
+
+.header-nav a.active{background:rgba(11,116,222,0.12);color:var(--primary)}

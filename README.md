@@ -1,31 +1,25 @@
-# CitiBank React + C# Template
+to run from terminal use:
+dotnet build BankingAPI/BankingAPI.csproj
+dotnet run --project BankingAPI/BankingAPI.csproj
 
-This workspace contains
-- `client/` - React app built with Vite
-- `server/` - ASP.NET Core backend with an add-numbers service
+or press play/excecute from the Program.cs file
 
-## What it does
+## for the tests
+dotnet new xunit -n BankingAPI.Tests
 
-1.
-- Shows a `Hello World` message in the browser
-- Calls a C# service to add two numbers
-- Displays the sum directly under the greeting
-2.
-- you can run the console by itself by running only the backend and provide answers in the terminal menu
+## added a reference
 
-## Run the frontend
+like this:
+dotnet add BankingAPI.Tests reference BankingAPI
 
-```powershell
-cd client
-npm install
-npm run dev
-```
+reason: That creates a link: Tests → can see Controllers, Services, Models
 
-## Run the backend
+## to test 
 
-```powershell
-dotnet restore server/Backend.Api.csproj
-dotnet run --project server/Backend.Api.csproj
-```
+run "dotnet test" at the root of the folder. This will use CitiBank.sln to run.   
 
-The API listens on `http://localhost:5234` in development.
+
+## for mongo db run :
+dotnet add package MongoDB.Driver
+dotnet user-secrets init  
+dotnet user-secrets set "MongoDbSettings:ConnectionString" "the connection string"
