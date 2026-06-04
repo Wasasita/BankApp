@@ -1,10 +1,12 @@
 // Simple HTTP service for talking to a Spring Boot backend.
 // Configure the backend base URL with Vite env var `VITE_API_BASE`.
 
-const BASE_URL = import.meta.env.VITE_API_BASE;
-if (!BASE_URL) {
-  throw new Error("VITE_API_BASE is not defined");
-}
+const BASE_URL =
+  (import.meta.env && import.meta.env.VITE_API_BASE) ||
+  'http://localhost:8060';
+
+console.log("VITE_API_BASE =", import.meta.env.VITE_API_BASE);
+console.log("BASE_URL =", BASE_URL);
 
 async function request(path, opts = {}) {
   const url = `${BASE_URL}${path}`
