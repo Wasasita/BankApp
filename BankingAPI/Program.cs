@@ -49,7 +49,7 @@ builder.Services.AddCors(options =>
             .WithOrigins(
                 "http://localhost:3000",
                 "http://localhost:5173", // Vite dev server (IMPORTANT)
-                "https://bank-5wn20suoq-wasasitas-projects.vercel.app"
+                "https://bank-app-eight.vercel.app"
             )
             .AllowAnyHeader()
             .AllowAnyMethod();
