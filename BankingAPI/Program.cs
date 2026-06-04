@@ -25,7 +25,7 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
     {
         throw new Exception("MongoDB connection string is missing");
     }
-    
+
     return new MongoClient(settings.ConnectionString);
 });
 
@@ -41,7 +41,24 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy
+            .WithOrigins(
+                "http://localhost:3000",
+                "http://localhost:5173", // Vite dev server (IMPORTANT)
+                "https://bank-5wn20suoq-wasasitas-projects.vercel.app/"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
+
+app.UseCors("Frontend");
 
 if (app.Environment.IsDevelopment())
 {
