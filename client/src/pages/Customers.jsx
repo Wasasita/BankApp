@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react'
 import DataService from '../api/DataService'
 import Customer from '../models/Customer'
-import './Data.css'
+import './Customers.css'
 
 
 export default function Data() {
   const [customers, setCustomers] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
 
   useEffect(() => {
     let mounted = true
-    setLoading(true)
     DataService.getCustomers()
       .then((res) => {
         if (!mounted) return
@@ -36,6 +35,27 @@ export default function Data() {
 
   return (
     <div className="customers">
+
+      {/* <div className="create-customer">
+
+        <input
+          placeholder="Customer Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+
+        <input
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <button onClick={createCustomer}>
+          Add Customer
+        </button>
+
+      </div> */}
+
       <div className="search-bar">
         <input
           value={search}

@@ -1,0 +1,15 @@
+.accounts {
+  padding: 2rem;
+}
+
+.account-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 1rem;
+  margin-bottom: 1rem;
+
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
