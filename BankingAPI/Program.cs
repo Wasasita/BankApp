@@ -20,6 +20,12 @@ builder.Services.Configure<MongoDbSettings>(
 builder.Services.AddSingleton<IMongoClient>(sp =>
 {
     var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
+
+    if (string.IsNullOrEmpty(settings.ConnectionString))
+    {
+        throw new Exception("MongoDB connection string is missing");
+    }
+    
     return new MongoClient(settings.ConnectionString);
 });
 
