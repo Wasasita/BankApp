@@ -1,18 +1,17 @@
 import './Header.css'
 
 export default function Header({
-  activePage = 'Home',
+  activePage = 'Customers',
   onNavigate = () => {}
 }) {
   return (
     <header className="site-header">
       <div className="brand">
-        <h1>Acme Bank</h1>
+        <h1>Ana Bank</h1>
       </div>
 
       <nav className="header-nav" aria-label="Main navigation">
         <ul>
-
           <li>
             <a
               href="#"
@@ -25,7 +24,6 @@ export default function Header({
               Home
             </a>
           </li>
-
           <li>
             <a
               href="#"

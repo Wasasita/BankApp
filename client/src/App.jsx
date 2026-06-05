@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import './App.css'
 import Header from './Components/Header'
-import Data from './pages/Customers'
 import Accounts from './pages/Account'
+import Customers from './pages/Customers'
 
 function App() {
   const [page, setPage] = useState('Home')
@@ -12,7 +12,7 @@ function App() {
       <Header activePage={page} onNavigate={setPage} />
 
       {page === 'Home' && (
-        <main className="home-page">
+        <main className="color-black">
           <h2>Banking Frontend</h2>
 
           <p>
@@ -29,7 +29,7 @@ function App() {
         </main>
       )}
 
-      {page === 'Customers' && <Data />}
+      {page === 'Customers' && <Customers />}
 
       {page === 'Accounts' && <Accounts />}
     </div>
