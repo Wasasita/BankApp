@@ -276,9 +276,9 @@ export default function Customers() {
             </div>
 
             <div className="customer-actions">
-              <button onClick={() => viewAccountsForCustomer(c.id)}>
+              {/* <button onClick={() => viewAccountsForCustomer(c.id)}>
                 View Accounts
-              </button>
+              </button> */}
 
               <button
                 onClick={async () => {
