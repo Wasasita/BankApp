@@ -1,6 +1,8 @@
 using BankingAPI.Models;
 using BankingAPI.Repositories;
 
+//Service = business logic
+
 namespace BankingAPI.Services;
 
 public class CustomerService
@@ -14,30 +16,59 @@ public class CustomerService
         _accountRepo = accountRepo;
     }
 
-    public Task<List<Customer>> GetAllCustomers()
-        => _customerRepo.GetAllAsync();
+    public async Task<List<Customer>> GetAllCustomers()
+    {
+        var customers = await _customerRepo.GetAllAsync();
+        var accounts = await _accountRepo.GetAllAsync();
 
-    public Task<Customer?> GetCustomerById(int id)
-        => _customerRepo.GetByIdAsync(id);
+        PopulateAccounts(customers, accounts);
+        return customers;
+    }
 
-    public Task<List<Customer>> GetCustomerByName(string name)
-        => _customerRepo.SearchByNameAsync(name);
+    public async Task<Customer?> GetCustomerById(int id)
+    {
+        var customer = await _customerRepo.GetByIdAsync(id);
+        if (customer == null) return null;
 
-    public Task<List<Customer>> GetCustomerByEmail(string email)
-        => _customerRepo.GetAllAsync();
+        customer.Accounts = await _accountRepo.GetByCustomerIdAsync(customer.Id);
+        return customer;
+    }
+
+    public async Task<List<Customer>> GetCustomerByName(string name)
+    {
+        var customers = await _customerRepo.SearchByNameAsync(name);
+        var accounts = await _accountRepo.GetAllAsync();
+
+        PopulateAccounts(customers, accounts);
+        return customers;
+    }
+
+    public async Task<List<Customer>> GetCustomerByEmail(string email)
+    {
+        var customers = await _customerRepo.SearchByEmailAsync(email);
+        var accounts = await _accountRepo.GetAllAsync();
+
+        PopulateAccounts(customers, accounts);
+        return customers;
+    }
 
     public async Task<decimal?> GetCustomerTotalBalance(int id)
     {
         var customer = await _customerRepo.GetByIdAsync(id);
         if (customer == null) return null;
 
-        return customer.Accounts.Sum(a => a.Balance);
+        var accounts = await _accountRepo.GetByCustomerIdAsync(id);
+        return accounts.Sum(a => a.Balance);
     }
 
     public async Task<List<Customer>> GetAllPremiumCustomers(decimal? threshold)
     {
         var customers = await _customerRepo.GetAllAsync();
+        var accounts = await _accountRepo.GetAllAsync();
+
         var t = threshold ?? 10000m;
+
+        PopulateAccounts(customers, accounts);
 
         return customers
             .Where(c => c.Accounts.Sum(a => a.Balance) > t)
@@ -52,4 +83,14 @@ public class CustomerService
 
     public Task<bool> DeleteCustomer(int id)
         => _customerRepo.DeleteAsync(id);
+
+    private static void PopulateAccounts(List<Customer> customers, List<Account> accounts)
+    {
+        foreach (var customer in customers)
+        {
+            customer.Accounts = accounts
+                .Where(a => a.CustomerId == customer.Id)
+                .ToList();
+        }
+    }
 }
