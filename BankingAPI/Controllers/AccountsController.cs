@@ -1,66 +1,77 @@
-using Microsoft.AspNetCore.Mvc;
 using BankingAPI.Models;
 using BankingAPI.Services;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace BankingAPI.Controllers
-{ 
+{
     [ApiController]
     [Route("api/[controller]")]
     public class AccountsController : ControllerBase
     {
         private readonly AccountService _accountService;
-        private readonly CustomerService _customerService;
 
-        public AccountsController(AccountService accountService, CustomerService customerService)
+        public AccountsController(AccountService accountService)
         {
             _accountService = accountService;
-            _customerService = customerService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Customer>>> GetAllCustomers()
+        public async Task<ActionResult<List<AccountResponse>>> GetAllAccounts([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var customers = await _customerService.GetAllCustomers(); 
-            return Ok(customers);
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+
+            var accounts = await _accountService.GetAllAccountsAsync();
+            var paged = accounts
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return Ok(paged);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Account>> GetAccountById(int id)
+        public async Task<ActionResult<AccountResponse>> GetAccountById(int id)
         {
-            // Added await
-            var account = await _accountService.GetAccountById(id);
+            var account = await _accountService.GetAccountByIdAsync(id);
             if (account == null)
                 return NotFound(new { message = "Account not found" });
+
             return Ok(account);
         }
 
         [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<Account>>> GetAccountByName([FromQuery] string name)
+        public async Task<ActionResult<List<AccountResponse>>> SearchAccounts([FromQuery] string? name, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            // Added await
-            var accounts = await _accountService.GetAccountByName(name);
-            return Ok(accounts);
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+
+            var accounts = await _accountService.SearchAccountsByCustomerNameAsync(name);
+            var paged = accounts
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return Ok(paged);
         }
 
         [HttpPost]
         public async Task<ActionResult<Account>> CreateAccount([FromQuery] int customerId, [FromBody] Account account)
         {
-            // Added await
-            var created = await _accountService.CreateAccount(customerId, account);
+            var created = await _accountService.CreateAccountAsync(customerId, account);
             if (created == null)
                 return NotFound(new { message = "Customer not found" });
 
-            // Note: Fixed created.Id routing mapping compilation constraint
             return CreatedAtAction(nameof(GetAccountById), new { id = created.Id }, created);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateAccount(int id, [FromBody] Account update)
+        public async Task<ActionResult<Account>> UpdateAccount(int id, [FromBody] Account update)
         {
-            // Added await
-            var existing = await _accountService.UpdateAccount(id, update);
+            var existing = await _accountService.UpdateAccountAsync(id, update);
             if (existing == null)
                 return NotFound(new { message = "Account not found" });
 
@@ -70,8 +81,7 @@ namespace BankingAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteAccount(int id)
         {
-            var deleted = await _accountService.DeleteAccount(id);
-
+            var deleted = await _accountService.DeleteAccountAsync(id);
             if (!deleted)
                 return NotFound(new { message = "Account not found" });
 

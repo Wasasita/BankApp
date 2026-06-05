@@ -1,13 +1,23 @@
 using Xunit;
 using BankingAPI.Services;
 using BankingAPI.Models;
+using System.Linq;
+using System.Threading.Tasks;
 
+[Collection("MongoDb collection")]
 public class CustomerServiceTests
 {
-    [Fact]
-    public void CreateCustomer_ShouldAssignId()
+    private readonly MongoDbFixture _fixture;
+
+    public CustomerServiceTests(MongoDbFixture fixture)
     {
-        var service = new CustomerService();
+        _fixture = fixture;
+    }
+
+    [Fact]
+    public async Task CreateCustomer_ShouldAssignId()
+    {
+        var service = _fixture.CustomerService;
 
         var customer = new Customer
         {
@@ -15,37 +25,37 @@ public class CustomerServiceTests
             Email = "test@test.com"
         };
 
-        var result = service.CreateCustomer(customer);
+        var result = await service.CreateCustomer(customer);
 
         var created = Assert.IsType<Customer>(result);
         Assert.True(created.Id > 0);
     }
 
     [Fact]
-    public void GetCustomerById_ShouldReturnCustomer()
+    public async Task GetCustomerById_ShouldReturnCustomer()
     {
-        var service = new CustomerService();
+        var service = _fixture.CustomerService;
 
-        var result = service.GetCustomerById(1);
+        var result = await service.GetCustomerById(1);
 
         Assert.NotNull(result);
     }
 
     [Fact]
-    public void GetPremiumCustomers_ShouldReturnOnlyHighBalance()
+    public async Task GetPremiumCustomers_ShouldReturnOnlyHighBalance()
     {
-        var service = new CustomerService();
+        var service = _fixture.CustomerService;
 
-        var result = service.GetAllPremiumCustomers(1000);
+        var result = await service.GetAllPremiumCustomers(1000);
 
         Assert.All(result, c =>
             Assert.True(c.Accounts.Sum(a => a.Balance) > 1000));
     }
 
     [Fact]
-    public void CreateAccount_ShouldAddAccount()
+    public async Task CreateAccount_ShouldAddAccount()
     {
-        var service = new AccountService();
+        var service = _fixture.AccountService;
 
         var account = new Account
         {
@@ -54,18 +64,18 @@ public class CustomerServiceTests
             Balance = 100
         };
 
-        var result = service.CreateAccount(1, account);
+        var result = await service.CreateAccountAsync(1, account);
 
         Assert.NotNull(result);
         Assert.True(result!.Id > 0);
     }
 
     [Fact]
-    public void GetCustomerById_InvalidId_ShouldReturnNull()
+    public async Task GetCustomerById_InvalidId_ShouldReturnNull()
     {
-        var service = new CustomerService();
+        var service = _fixture.CustomerService;
 
-        var result = service.GetCustomerById(9999);
+        var result = await service.GetCustomerById(9999);
 
         Assert.Null(result);
     }

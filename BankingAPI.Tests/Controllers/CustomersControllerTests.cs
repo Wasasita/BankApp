@@ -2,17 +2,24 @@ using Xunit;
 using BankingAPI.Controllers;
 using BankingAPI.Models;
 using Microsoft.AspNetCore.Mvc;
-using BankingAPI.Services;
+using System.Threading.Tasks;
 
+[Collection("MongoDb collection")]
 public class CustomersControllerTests
 {
-    [Fact]
-    public void GetCustomerById_Invalid_ShouldReturnNotFound()
-    {
-        var service = new CustomerService();
-        var controller = new CustomersController(service);
+    private readonly MongoDbFixture _fixture;
 
-        var result = controller.GetCustomerById(999);
+    public CustomersControllerTests(MongoDbFixture fixture)
+    {
+        _fixture = fixture;
+    }
+
+    [Fact]
+    public async Task GetCustomerById_Invalid_ShouldReturnNotFound()
+    {
+        var controller = new CustomersController(_fixture.CustomerService);
+
+        var result = await controller.GetCustomerById(999);
 
         Assert.IsType<NotFoundObjectResult>(result.Result);
     }
