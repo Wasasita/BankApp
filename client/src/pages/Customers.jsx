@@ -268,9 +268,9 @@ export default function Customers() {
 
             <div className="customer-info">
               <p className="customer-name">{c.name}</p>
-              <p className="text-sm">{c.email}</p>
-              <p className="text-xs">ID: {c.id}</p>
-              <p className="text-xs">
+              <p className="customer-id">ID: {c.id}</p>
+              <p className="customer-email">{c.email}</p>
+              <p className="customer-balance">
                 Total Balance: ${Number(c.totalBalance || 0).toLocaleString()}
               </p>
             </div>
