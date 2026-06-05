@@ -234,7 +234,7 @@ export default function Accounts({ customerId }) {
           <span>Account #</span>
           <span>Type</span>
           <span>Balance</span>
-          <span>Owner</span>
+          {/* <span>Owner</span> */}
           <span>Actions</span>
         </div>
 
@@ -243,7 +243,7 @@ export default function Accounts({ customerId }) {
             <span>{account.accountNumber}</span>
             <span>{account.accountType}</span>
             <span>${Number(account.balance || 0).toLocaleString()}</span>
-            <span>{account.customerName || '—'}</span>
+            {/* <span>{account.customerName || '—'}</span> */}
             <div className="actions">
               <button>Edit</button>
               <button>Delete</button>

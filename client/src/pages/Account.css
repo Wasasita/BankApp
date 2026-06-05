@@ -115,7 +115,7 @@
 
 .account-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr;
+  grid-template-columns: 2fr 1fr 2fr 2fr;
   padding: 1rem;
   border-top: 1px solid #ddd;
   align-items: center;
@@ -124,6 +124,7 @@
 .actions {
   display: flex;
   gap: 0.5rem;
+  align-items: center;
 }
 
 .actions button {
@@ -131,6 +132,7 @@
   cursor: pointer;
   background: #ffffff;
   border: 1px solid #d1d5db;
+  color: #333;
   border-radius: 8px;
 }
 
