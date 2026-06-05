@@ -5,7 +5,7 @@ import './Account.css'
 export default function Accounts({ customerId }) {
   const [accounts, setAccounts] = useState([])
   const [search, setSearch] = useState('')
-  const [premiumThreshold, setPremiumThreshold] = useState('10000')
+  // const [premiumThreshold, setPremiumThreshold] = useState('10000')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -72,15 +72,22 @@ export default function Accounts({ customerId }) {
   const handleSearch = async () => {
     setMessage('')
     setLoading(true)
-
     if (!search.trim()) {
       await handleLoadAllAccounts()
       return
     }
-
     try {
-      const data = await DataService.searchAccounts(search)
-      const accountList = Array.isArray(data) ? data : []
+      const isId = /^\d+$/.test(search.trim())
+      let accountList
+
+      if (isId) {
+        const data = await DataService.getAccount(search.trim())
+        accountList = data ? [data] : []  // wrap single result in array
+      } else {
+        const data = await DataService.searchAccounts(search)
+        accountList = Array.isArray(data) ? data : []
+      }
+
       setAccounts(accountList)
       if (accountList.length === 0) {
         setMessage(`No accounts found for "${search}"`)
