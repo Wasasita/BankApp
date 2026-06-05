@@ -20,7 +20,7 @@
 .search-bar button,
 .search-actions button,
 .modal-actions button {
-  background: #1e3a8a;
+  background: #1e378a;
   border: none;
   color: white;
   border-radius: 8px;
@@ -60,6 +60,17 @@
 
 .premium-title {
   color: #ebd488;
+  font-family: 'Lora', serif;
+  font-size: 1.25rem;
+  margin-bottom: 0rem;
+  margin-top: 0rem;
+}
+
+.premium-description {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  margin-bottom: 0rem;
+  margin-top: 0rem;
 }
 
 .message {

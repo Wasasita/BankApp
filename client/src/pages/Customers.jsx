@@ -233,7 +233,7 @@ export default function Customers() {
       <div className="premium-section">
         <h3 className="premium-title">Premium Customers</h3>
 
-        <p>
+        <p className="premium-description">
           Only customers whose account balances exceed the specified
           threshold.
         </p>
