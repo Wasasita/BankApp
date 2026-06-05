@@ -17,30 +17,36 @@ function App() {
     : undefined
 
   return (
-    <div className="app">
+    <div>
+      <div className="app">
       <Header activePage={page} onNavigate={setPage} />
 
       {page === 'Home' && (
-        <main className="color-black">
+        <main className="color-black flex-1">
           <h2>Banking Frontend</h2>
 
           <p>
             This application provides a user interface for interacting
             with the Banking REST API.
           </p>
-
-          <ul>
-            <li>Manage Customers</li>
-            <li>Manage Accounts</li>
-            <li>Search Records</li>
-            <li>View Premium Customers</li>
-          </ul>
         </main>
       )}
 
       {page === 'Customers' && <Customers />}
 
       {page === 'Accounts' && <Accounts customerId={customerId} />}
+      </div>
+
+      <footer className="footer bg-neutral-900 text-white p-6 text-center text-sm mt-auto">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p>&copy; {new Date().getFullYear()} Banking App. All rights reserved.</p>
+          <div className="flex gap-4">
+            <a href="#privacy" className="hover:underline text-neutral-400 hover:text-white transition-colors">Privacy Policy</a>
+            <a href="#terms" className="hover:underline text-neutral-400 hover:text-white transition-colors">Terms of Service</a>
+          </div>
+        </div>
+      </footer>
+      
     </div>
   )
 }
