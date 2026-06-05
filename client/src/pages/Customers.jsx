@@ -230,7 +230,7 @@ export default function Customers() {
         </div>
       </div>
 
-      {/* <div className="premium-section">
+      <div className="premium-section">
         <h3 className="premium-title">Premium Customers</h3>
 
         <p>
@@ -248,7 +248,7 @@ export default function Customers() {
 
           <button onClick={handlePremiumSearch}>Filter</button>
         </div>
-      </div> */}
+      </div>
 
       {message && <p className="message">{message}</p>}
 

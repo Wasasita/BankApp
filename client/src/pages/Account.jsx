@@ -213,7 +213,7 @@ export default function Accounts({ customerId }) {
         </div>
       </div>
 
-      <div className="premium-section">
+      {/* <div className="premium-section">
         <label>Premium Search</label>
         <div className="search-bar">
           <input
@@ -224,7 +224,7 @@ export default function Accounts({ customerId }) {
           />
           <button onClick={handlePremiumSearch}>Premium Search</button>
         </div>
-      </div>
+      </div> */}
 
       {message && <p className="message">{message}</p>}
       {loading && <p>Loading accounts...</p>}
