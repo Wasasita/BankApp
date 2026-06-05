@@ -50,3 +50,6 @@ TestResults/
 
 # But keep template files
 !**/.env.example
+
+node_modules/
+dist/
