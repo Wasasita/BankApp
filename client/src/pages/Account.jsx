@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import DataService from '../api/DataService'
 import './Account.css'
+import EditAccountForm from '../Components/EditAccountForm'
 
 export default function Accounts({ customerId }) {
   const [accounts, setAccounts] = useState([])
@@ -24,6 +25,7 @@ export default function Accounts({ customerId }) {
   const [newAccountBalance, setNewAccountBalance] = useState('0')
   const [createAccountError, setCreateAccountError] = useState('')
   const [creatingAccount, setCreatingAccount] = useState(false)
+  const [editingAccount, setEditingAccount] = useState(null)
 
   useEffect(() => {
     let mounted = true
@@ -99,36 +101,64 @@ export default function Accounts({ customerId }) {
     }
   }
 
-  const handlePremiumSearch = async () => {
+  const handleEditAccount = (account) => {
+    setEditingAccount(account)
+  }
+
+  const handleEditSubmit = async (updated) => {
     setMessage('')
-    setLoading(true)
-
     try {
-      const customers = await DataService.getPremiumCustomers(
-        Number(premiumThreshold)
+      await DataService.updateAccount(editingAccount.id, updated)
+      setAccounts((prev) =>
+        prev.map((a) => a.id === editingAccount.id ? { ...a, ...updated } : a)
       )
-
-      const accountList = Array.isArray(customers)
-        ? customers.flatMap((customer) =>
-            (customer.accounts || []).map((account) => ({
-              ...account,
-              customerName: customer.name
-            }))
-          )
-        : []
-
-      setAccounts(accountList)
-      if (accountList.length === 0) {
-        setMessage(
-          `No premium accounts found above $${premiumThreshold}`
-        )
-      }
+      setEditingAccount(null)
+      setMessage(`Account #${editingAccount.id} updated successfully.`)
     } catch (err) {
-      setMessage(err.message || 'Premium search failed')
-    } finally {
-      setLoading(false)
+      setMessage(err.message || 'Could not update account')
     }
   }
+
+  const handleDeleteAccount = async (id) => {
+    if (!window.confirm(`Delete account #${id}?`)) return
+    try {
+      await DataService.deleteAccount(id)
+      setAccounts((prev) => prev.filter((a) => a.id !== id))
+      setMessage(`Account #${id} deleted.`)
+    } catch (err) {
+      setMessage(err.message || 'Delete failed')
+    }
+  }
+  // const handlePremiumSearch = async () => {
+  //   setMessage('')
+  //   setLoading(true)
+
+  //   try {
+  //     const customers = await DataService.getPremiumCustomers(
+  //       Number(premiumThreshold)
+  //     )
+
+  //     const accountList = Array.isArray(customers)
+  //       ? customers.flatMap((customer) =>
+  //           (customer.accounts || []).map((account) => ({
+  //             ...account,
+  //             customerName: customer.name
+  //           }))
+  //         )
+  //       : []
+
+  //     setAccounts(accountList)
+  //     if (accountList.length === 0) {
+  //       setMessage(
+  //         `No premium accounts found above $${premiumThreshold}`
+  //       )
+  //     }
+  //   } catch (err) {
+  //     setMessage(err.message || 'Premium search failed')
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }
 
   const handleCreateCustomer = async (event) => {
     event.preventDefault()
@@ -245,6 +275,19 @@ export default function Accounts({ customerId }) {
           <span>Actions</span>
         </div>
 
+        {editingAccount && (
+          <div className="modal-overlay">
+            <div className="modal-card">
+              <h2>Edit Account</h2>
+              <EditAccountForm
+                account={editingAccount}
+                onSubmit={handleEditSubmit}
+                onCancel={() => setEditingAccount(null)}
+              />
+            </div>
+          </div>
+        )}
+
         {accounts.map((account) => (
           <div key={account.id} className="account-row">
             <span>{account.accountNumber}</span>
@@ -252,8 +295,8 @@ export default function Accounts({ customerId }) {
             <span>${Number(account.balance || 0).toLocaleString()}</span>
             {/* <span>{account.customerName || '—'}</span> */}
             <div className="actions">
-              <button>Edit</button>
-              <button>Delete</button>
+              <button onClick={() => handleEditAccount(account)}>Edit</button>
+              <button onClick={() => handleDeleteAccount(account.id)}>Delete</button>
             </div>
           </div>
         ))}
