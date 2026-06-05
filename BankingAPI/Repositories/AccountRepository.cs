@@ -3,6 +3,8 @@ using BankingAPI.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
+// Repository = database access
+
 namespace BankingAPI.Repositories;
 
 public class AccountRepository : IAccountRepository
