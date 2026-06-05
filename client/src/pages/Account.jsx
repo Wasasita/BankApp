@@ -208,7 +208,7 @@ export default function Accounts({ customerId }) {
         <div className="search-container">
           <input
             type="text"
-            placeholder="Search by customer id"
+            placeholder="Search by customer id or name"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
