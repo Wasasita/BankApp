@@ -5,7 +5,16 @@ import Accounts from './pages/Account'
 import Customers from './pages/Customers'
 
 function App() {
-  const [page, setPage] = useState('Home')
+  const searchParams = new URLSearchParams(window.location.search)
+  const initialCustomerId = searchParams.get('customerId')
+  const initialPage =
+    searchParams.get('page') ||
+    (initialCustomerId ? 'Accounts' : 'Home')
+
+  const [page, setPage] = useState(initialPage)
+  const customerId = initialCustomerId
+    ? Number(initialCustomerId)
+    : undefined
 
   return (
     <div className="app">
@@ -31,7 +40,7 @@ function App() {
 
       {page === 'Customers' && <Customers />}
 
-      {page === 'Accounts' && <Accounts />}
+      {page === 'Accounts' && <Accounts customerId={customerId} />}
     </div>
   )
 }

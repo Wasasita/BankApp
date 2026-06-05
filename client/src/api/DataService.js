@@ -33,11 +33,17 @@ const DataService = {
   },
 
   searchCustomers(name) {
-    return request(`/api/customers/search?name=${name}`)
+    return request(`/api/customers/search?name=${encodeURIComponent(name)}`)
   },
 
-  getPremiumCustomers() {
-    return request('/api/customers/premium')
+  getPremiumCustomers(threshold = 0) {
+    return request(
+      `/api/customers/premium?threshold=${encodeURIComponent(threshold)}`
+    )
+  },
+
+  getCustomerTotalBalance(id) {
+    return request(`/api/customers/${id}/total-balance`)
   },
 
   createCustomer(customer) {
@@ -73,11 +79,15 @@ const DataService = {
   },
 
   searchAccounts(name) {
-    return request(`/api/accounts/search?name=${name}`)
+    return request(`/api/accounts/search?name=${encodeURIComponent(name)}`)
   },
 
-  createAccount(account) {
-    return request('/api/accounts', {
+  getAccountsByCustomerId(customerId) {
+    return request(`/api/customers/${encodeURIComponent(customerId)}/accounts`)
+  },
+
+  createAccount(account, customerId) {
+    return request(`/api/accounts?customerId=${encodeURIComponent(customerId)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(account)
