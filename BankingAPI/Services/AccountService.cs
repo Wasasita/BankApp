@@ -42,13 +42,36 @@ public class AccountService
     {
         var customers = await _customerRepo.GetAllAsync();
         var matchingCustomers = customers
-            .Where(c => string.IsNullOrWhiteSpace(name) || c.Name.Contains(name, System.StringComparison.OrdinalIgnoreCase))
+            .Where(c => string.IsNullOrWhiteSpace(name) || 
+                        c.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
-        return matchingCustomers
-            .SelectMany(c => c.Accounts)
-            .Select(account => BuildAccountResponse(account, matchingCustomers.FirstOrDefault(c => c.Id == account.CustomerId)?.Name ?? string.Empty))
-            .OrderBy(account => account.Id)
+        if (!matchingCustomers.Any())
+            return new List<AccountResponse>();
+
+        var customerIds = matchingCustomers.Select(c => c.Id).ToList();
+
+        // Fetch from the actual accounts collection, not the embedded array
+        var allAccounts = new List<AccountResponse>();
+        foreach (var customerId in customerIds)
+        {
+            var accounts = await _accountRepo.GetByCustomerIdAsync(customerId);
+            var owner = matchingCustomers.First(c => c.Id == customerId);
+            allAccounts.AddRange(accounts.Select(a => BuildAccountResponse(a, owner.Name)));
+        }
+
+        return allAccounts.OrderBy(a => a.Id).ToList();
+    }
+
+    public async Task<List<AccountResponse>> GetAccountsByCustomerIdAsync(int customerId)
+    {
+        var accounts = await _accountRepo.GetByCustomerIdAsync(customerId);  // ← already correct
+        if (accounts.Count == 0)
+            return new List<AccountResponse>();
+
+        var owner = await _customerRepo.GetByIdAsync(customerId);
+        return accounts
+            .Select(a => BuildAccountResponse(a, owner?.Name ?? string.Empty))
             .ToList();
     }
 
