@@ -20,16 +20,8 @@ public class CustomerService
     public Task<Customer?> GetCustomerById(int id)
         => _customerRepo.GetByIdAsync(id);
 
-    public async Task<List<Customer>> GetCustomerByName(string name)
-    {
-        var customers = await _customerRepo.GetAllAsync();
-
-        return customers
-            .Where(c =>
-                !string.IsNullOrEmpty(c.Name) &&
-                c.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
-            .ToList();
-    }
+    public Task<List<Customer>> GetCustomerByName(string name)
+        => _customerRepo.SearchByNameAsync(name);
 
     public Task<List<Customer>> GetCustomerByEmail(string email)
         => _customerRepo.GetAllAsync();
