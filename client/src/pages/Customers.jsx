@@ -58,7 +58,7 @@ export default function Customers() {
       list.map(async (customer) => {
         try {
           const total = await DataService.getCustomerTotalBalance(customer.id)
-          return Number(total) || 0
+          return Number(total.totalBalance) || 0  // ← extract .totalBalance
         } catch {
           return 0
         }
@@ -169,7 +169,7 @@ export default function Customers() {
         () => 0
       )
 
-      const created = { ...customer, totalBalance: Number(total) || 0 }
+      const created = { ...customer, totalBalance: Number(total.totalBalance) || 0 }
       setCustomers((prev) => [created, ...prev])
       setAllCustomers((prev) => [created, ...prev])
       setNewName('')
