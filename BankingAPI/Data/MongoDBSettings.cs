@@ -6,4 +6,6 @@ public class MongoDbSettings
     public string DatabaseName { get; set; } = string.Empty;
     public string CustomersCollectionName { get; set; } = "Customers";
     public string AccountsCollectionName { get; set; } = "Accounts";
+    public string TransactionsCollectionName { get; set; } = "transactions";
+    public string UsersCollectionName { get; set; } = "users";
 }

@@ -29,3 +29,9 @@ run "dotnet test" at the root of the folder. This will use CitiBank.sln to run.
 dotnet add package MongoDB.Driver
 dotnet user-secrets init  
 dotnet user-secrets set "MongoDbSettings:ConnectionString" "the connection string"
+
+# Start MongoDB (Docker recommended)
+docker run -d -p 27017:27017 mongo
+
+# Then run tests
+dotnet test BankingAPI.Tests/BankingAPI.Tests.csproj
