@@ -32,6 +32,9 @@ dotnet user-secrets set "MongoDbSettings:ConnectionString" "the connection strin
 
 # Start MongoDB (Docker recommended)
 docker run -d -p 27017:27017 mongo
-
-# Then run tests
 dotnet test BankingAPI.Tests/BankingAPI.Tests.csproj
+
+or you can just go to the folder BankingAPI.Tests and run dotnet test 
+expected output:
+Test summary: total: 84, failed: 0, succeeded: 84, skipped: 0, duration: 11.9s
+Build succeeded in 14.5s
