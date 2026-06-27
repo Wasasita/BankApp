@@ -24,7 +24,7 @@ function TransactionsPage() {
       </div>
 
       {filtered.length === 0 ? (
-        <EmptyState icon="📭" title="No Transactions" description="No transactions found" />
+        <EmptyState title="No Transactions" description="No transactions found" />
       ) : (
         <Card>
           <div className="overflow-x-auto">
@@ -36,7 +36,7 @@ function TransactionsPage() {
                 {filtered.map(t => (
                   <tr key={t.id} className="hover:bg-neutral-50">
                     <td className="py-3">{formatDateTime(t.date)}</td>
-                    <td className="py-3 flex items-center gap-2">{getTransactionTypeEmoji(t.type)} {t.type}</td>
+                    <td className="py-3 flex items-center gap-2">{t.type}</td>
                     <td className="py-3 font-bold">{formatCurrency(t.amount)}</td>
                     <td className="py-3 text-neutral-600">{t.description || '-'}</td>
                   </tr>

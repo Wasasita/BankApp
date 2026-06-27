@@ -38,7 +38,13 @@ export const accountSchema = z.object({
     .min(0, 'Balance cannot be negative'),
   customerId: z
     .number()
-    .positive('Customer ID must be positive'),
+    .positive('Customer must be selected'),
+});
+
+export const accountEditSchema = z.object({
+  accountNumber: z.string().min(1, 'Account number is required'),
+  accountType: z.string().min(1, 'Account type is required'),
+  balance: z.number().min(0, 'Balance cannot be negative'),
 });
 
 export const depositSchema = z.object({

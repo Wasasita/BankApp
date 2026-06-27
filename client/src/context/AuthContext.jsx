@@ -15,12 +15,14 @@ export function AuthProvider({ children }) {
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
 
-    if (storedToken && storedUser) {
+    if (storedToken) {
       setToken(storedToken);
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
-        setUser(storedUser);
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch {
+          setUser(storedUser);
+        }
       }
     }
     setIsLoading(false);
@@ -44,12 +46,14 @@ export function AuthProvider({ children }) {
 
       const data = await response.json();
 
+      const userValue = data.user ?? email;
+
       // Store token and user
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', typeof data.user === 'string' ? data.user : JSON.stringify(data.user));
+      localStorage.setItem('user', typeof userValue === 'string' ? userValue : JSON.stringify(userValue));
 
       setToken(data.token);
-      setUser(data.user);
+      setUser(userValue);
 
       return { success: true };
     } catch (error) {

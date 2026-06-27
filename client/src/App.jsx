@@ -11,9 +11,7 @@ import TransactionsPage from './pages/Transactions';
 import DepositPage from './pages/Deposit';
 import WithdrawPage from './pages/Withdraw';
 import TransferPage from './pages/Transfer';
-
-// Placeholder for Premium Customers (will refactor to use usePremiumCustomers hook)
-const PremiumCustomers = () => <div className="p-6"><h2 className="text-2xl font-bold">Premium Customers - Coming Soon</h2></div>;
+import PremiumCustomersPage from './pages/PremiumCustomers';
 
 // Create Query Client
 const queryClient = new QueryClient({
@@ -59,7 +57,7 @@ function AppRoutes() {
         <Route path="/deposit" element={<DepositPage />} />
         <Route path="/withdraw" element={<WithdrawPage />} />
         <Route path="/transfer" element={<TransferPage />} />
-        <Route path="/premium-customers" element={<PremiumCustomers />} />
+        <Route path="/premium-customers" element={<PremiumCustomersPage />} />
       </Route>
 
       {/* Default Route */}

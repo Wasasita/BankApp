@@ -12,11 +12,11 @@ export function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
 
   const mainNavItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/customers', label: 'Customers', icon: '👥' },
-    { path: '/accounts', label: 'Accounts', icon: '💳' },
-    { path: '/transactions', label: 'Transactions', icon: '📝' },
-    { path: '/premium-customers', label: 'Premium Customers', icon: '⭐' },
+    { path: '/dashboard', label: 'Dashboard' },
+    { path: '/customers', label: 'Customers'},
+    { path: '/accounts', label: 'Accounts'},
+    { path: '/transactions', label: 'Transactions'},
+    { path: '/premium-customers', label: 'Premium Customers'},
   ];
 
   // Contextual shortcuts based on current page
@@ -108,24 +108,24 @@ export function Sidebar() {
 function getShortcuts(pathname) {
   const shortcuts = {
     '/customers': [
-      { path: '/customers?modal=create', label: 'Add Customer', icon: '➕' },
-      { path: '/customers?search=true', label: 'Search Customer', icon: '🔍' },
-      { path: '/premium-customers', label: 'Premium Customers', icon: '⭐' },
+      { path: '/customers?modal=create', label: 'Add Customer'},
+      { path: '/customers?search=true', label: 'Search Customer'},
+      { path: '/premium-customers', label: 'Premium Customers'},
     ],
     '/accounts': [
-      { path: '/accounts?modal=create', label: 'Add Account', icon: '➕' },
-      { path: '/accounts?search=true', label: 'Search Account', icon: '🔍' },
+      { path: '/accounts?modal=create', label: 'Add Account'},
+      { path: '/accounts?search=true', label: 'Search Account'},
     ],
     '/transactions': [
-      { path: '/deposit', label: 'Deposit', icon: '💰' },
-      { path: '/withdraw', label: 'Withdraw', icon: '💸' },
-      { path: '/transfer', label: 'Transfer', icon: '🔄' },
+      { path: '/deposit', label: 'Deposit'},
+      { path: '/withdraw', label: 'Withdraw'},
+      { path: '/transfer', label: 'Transfer'},
     ],
     '/dashboard': [
-      { path: '/customers?modal=create', label: 'New Customer', icon: '➕' },
-      { path: '/accounts?modal=create', label: 'New Account', icon: '💳' },
-      { path: '/deposit', label: 'Deposit', icon: '💰' },
-      { path: '/transfer', label: 'Transfer', icon: '🔄' },
+      { path: '/customers?modal=create', label: 'New Customer'},
+      { path: '/accounts?modal=create', label: 'New Account'},
+      { path: '/deposit', label: 'Deposit'},
+      { path: '/transfer', label: 'Transfer'},
     ],
   };
 

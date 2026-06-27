@@ -1,28 +1,36 @@
-import { useForm, Controller } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { accountSchema } from '../../utils/validation'
-import { useAccounts } from '../../api/queries'
+import { accountSchema, accountEditSchema } from '../../utils/validation'
+import { useCustomers } from '../../api/queries'
 
 /**
  * AccountForm component - Form for creating/editing accounts
  */
-export function AccountForm({ onSubmit, onCancel, initialData = null, isLoading = false }) {
-  const { data: accounts = [] } = useAccounts()
+export function AccountForm({ onSubmit, onCancel, initialData = null, isLoading = false, mode = 'create' }) {
+  const { data: customers = [] } = useCustomers()
+  const isEdit = mode === 'edit'
+  const schema = isEdit ? accountEditSchema : accountSchema
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
   } = useForm({
-    resolver: zodResolver(accountSchema),
+    resolver: zodResolver(schema),
     mode: 'onBlur',
-    defaultValues: initialData || { accountNumber: '', accountType: 'Checking', balance: 0, customerId: '' },
+    defaultValues: initialData || {
+      accountNumber: '',
+      accountType: 'Checking',
+      balance: 0,
+      customerId: undefined,
+    },
   })
 
   const onSubmitHandler = async (data) => {
     try {
       await onSubmit(data)
-      reset()
+      if (!isEdit) reset()
     } catch (error) {
       console.error('Form submission error:', error)
     }
@@ -32,7 +40,6 @@ export function AccountForm({ onSubmit, onCancel, initialData = null, isLoading 
 
   return (
     <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-4">
-      {/* Account Number */}
       <div>
         <label className="block text-sm font-medium text-neutral-700 mb-2">
           Account Number
@@ -49,7 +56,6 @@ export function AccountForm({ onSubmit, onCancel, initialData = null, isLoading 
         )}
       </div>
 
-      {/* Account Type */}
       <div>
         <label className="block text-sm font-medium text-neutral-700 mb-2">
           Account Type
@@ -61,17 +67,15 @@ export function AccountForm({ onSubmit, onCancel, initialData = null, isLoading 
         >
           <option value="Checking">Checking</option>
           <option value="Savings">Savings</option>
-          <option value="Money Market">Money Market</option>
         </select>
         {errors.accountType && (
           <p className="mt-1 text-sm text-danger">{errors.accountType.message}</p>
         )}
       </div>
 
-      {/* Balance */}
       <div>
         <label className="block text-sm font-medium text-neutral-700 mb-2">
-          Initial Balance
+          {isEdit ? 'Balance' : 'Initial Balance'}
         </label>
         <input
           type="number"
@@ -87,24 +91,29 @@ export function AccountForm({ onSubmit, onCancel, initialData = null, isLoading 
         )}
       </div>
 
-      {/* Customer ID */}
-      <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-2">
-          Customer ID
-        </label>
-        <input
-          type="number"
-          placeholder="Customer ID"
-          className="input-field"
-          disabled={isSubmittingState}
-          {...register('customerId', { valueAsNumber: true })}
-        />
-        {errors.customerId && (
-          <p className="mt-1 text-sm text-danger">{errors.customerId.message}</p>
-        )}
-      </div>
+      {!isEdit && (
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 mb-2">
+            Customer
+          </label>
+          <select
+            className="input-field"
+            disabled={isSubmittingState}
+            {...register('customerId', { valueAsNumber: true })}
+          >
+            <option value="">Select a customer</option>
+            {customers.map((customer) => (
+              <option key={customer.id} value={customer.id}>
+                {customer.name} ({customer.email})
+              </option>
+            ))}
+          </select>
+          {errors.customerId && (
+            <p className="mt-1 text-sm text-danger">{errors.customerId.message}</p>
+          )}
+        </div>
+      )}
 
-      {/* Buttons */}
       <div className="flex gap-3 justify-end">
         <button
           type="button"
@@ -119,7 +128,7 @@ export function AccountForm({ onSubmit, onCancel, initialData = null, isLoading 
           disabled={isSubmittingState}
           className="btn-primary disabled:opacity-50"
         >
-          {isSubmittingState ? 'Saving...' : 'Save'}
+          {isSubmittingState ? 'Saving...' : isEdit ? 'Update Account' : 'Create Account'}
         </button>
       </div>
     </form>

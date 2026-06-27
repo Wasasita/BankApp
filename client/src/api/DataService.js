@@ -66,6 +66,10 @@ const DataService = {
     return request(`/api/customers/search?name=${encodeURIComponent(name)}`)
   },
 
+  searchCustomersByEmail(email) {
+    return request(`/api/customers/search-by-email?email=${encodeURIComponent(email)}`)
+  },
+
   getPremiumCustomers(threshold = 0) {
     return request(
       `/api/customers/premium?threshold=${encodeURIComponent(threshold)}`

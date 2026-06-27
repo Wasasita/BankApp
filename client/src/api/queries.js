@@ -9,6 +9,7 @@ const QUERY_KEYS = {
   customers: ['customers'],
   customer: (id) => ['customer', id],
   searchCustomers: (name) => ['customers', 'search', name],
+  searchCustomersByEmail: (email) => ['customers', 'search-email', email],
   premiumCustomers: (threshold) => ['customers', 'premium', threshold],
   customerBalance: (id) => ['customer', id, 'balance'],
   accounts: ['accounts'],
@@ -45,16 +46,27 @@ export function useSearchCustomers(name) {
     queryFn: () => DataService.searchCustomers(name).then(data =>
       Array.isArray(data) ? data.map(Customer.from) : []
     ),
-    enabled: !!name && name.length > 0,
+    enabled: !!name && name.trim().length > 0,
   });
 }
 
-export function usePremiumCustomers(threshold = 0) {
+export function useSearchCustomersByEmail(email) {
+  return useQuery({
+    queryKey: QUERY_KEYS.searchCustomersByEmail(email),
+    queryFn: () => DataService.searchCustomersByEmail(email).then(data =>
+      Array.isArray(data) ? data.map(Customer.from) : []
+    ),
+    enabled: !!email && email.trim().length > 0,
+  });
+}
+
+export function usePremiumCustomers(threshold = 0, enabled = true) {
   return useQuery({
     queryKey: QUERY_KEYS.premiumCustomers(threshold),
     queryFn: () => DataService.getPremiumCustomers(threshold).then(data =>
       Array.isArray(data) ? data.map(Customer.from) : []
     ),
+    enabled,
   });
 }
 
@@ -72,6 +84,7 @@ export function useCreateCustomer() {
     mutationFn: (customer) => DataService.createCustomer(customer),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.customers });
+      queryClient.invalidateQueries({ queryKey: ['customers', 'premium'] });
     },
   });
 }
@@ -83,6 +96,7 @@ export function useUpdateCustomer() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.customers });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.customer(id) });
+      queryClient.invalidateQueries({ queryKey: ['customers', 'premium'] });
     },
   });
 }
@@ -93,6 +107,7 @@ export function useDeleteCustomer() {
     mutationFn: (id) => DataService.deleteCustomer(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.customers });
+      queryClient.invalidateQueries({ queryKey: ['customers', 'premium'] });
     },
   });
 }

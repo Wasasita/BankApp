@@ -22,7 +22,7 @@ export class Transaction {
       dto.type,
       dto.amount,
       dto.description,
-      dto.date,
+      dto.date ?? dto.createdAt,
       dto.balance
     );
   }

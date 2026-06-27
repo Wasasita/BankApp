@@ -41,25 +41,21 @@ export function DashboardPage() {
         <SummaryCard
           title="Total Customers"
           value={totalCustomers}
-          icon="👥"
           color="bg-blue-50"
         />
         <SummaryCard
           title="Total Accounts"
           value={totalAccounts}
-          icon="💳"
           color="bg-green-50"
         />
         <SummaryCard
           title="Total Deposits"
           value={formatCurrency(totalDeposits)}
-          icon="💰"
           color="bg-emerald-50"
         />
         <SummaryCard
           title="Total Transactions"
           value={totalTransactions}
-          icon="📝"
           color="bg-purple-50"
         />
       </div>
@@ -71,7 +67,6 @@ export function DashboardPage() {
           <Card header={<h3 className="text-lg font-semibold">Recent Transactions</h3>}>
             {recentTransactions.length === 0 ? (
               <EmptyState
-                icon="📭"
                 title="No Transactions"
                 description="No transactions have been recorded yet"
               />
@@ -121,31 +116,31 @@ export function DashboardPage() {
                 onClick={() => navigate('/customers?modal=create')}
                 className="btn-primary w-full justify-center flex items-center gap-2"
               >
-                ➕ New Customer
+                + New Customer
               </button>
               <button
                 onClick={() => navigate('/accounts?modal=create')}
                 className="btn-primary w-full justify-center flex items-center gap-2"
               >
-                💳 New Account
+                + New Account
               </button>
               <button
                 onClick={() => navigate('/deposit')}
                 className="btn-success w-full justify-center flex items-center gap-2"
               >
-                💰 Deposit
+                + Deposit
               </button>
               <button
                 onClick={() => navigate('/transfer')}
                 className="btn-primary w-full justify-center flex items-center gap-2"
               >
-                🔄 Transfer
+                + Transfer
               </button>
               <button
                 onClick={() => navigate('/transactions')}
                 className="btn-secondary w-full justify-center flex items-center gap-2"
               >
-                📝 All Transactions
+                + All Transactions
               </button>
             </div>
           </Card>
@@ -158,7 +153,7 @@ export function DashboardPage() {
 /**
  * SummaryCard component
  */
-function SummaryCard({ title, value, icon, color }) {
+function SummaryCard({ title, value, color }) {
   return (
     <div className={`${color} rounded-lg p-6 border border-neutral-200`}>
       <div className="flex items-start justify-between">
@@ -166,7 +161,6 @@ function SummaryCard({ title, value, icon, color }) {
           <p className="text-sm text-neutral-600 mb-2">{title}</p>
           <p className="text-3xl font-bold text-neutral-900">{value}</p>
         </div>
-        <div className="text-3xl">{icon}</div>
       </div>
     </div>
   );
