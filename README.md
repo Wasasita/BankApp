@@ -1,3 +1,5 @@
+Hi!
+
 to run from terminal use:
 dotnet build BankingAPI/BankingAPI.csproj
 dotnet run --project BankingAPI/BankingAPI.csproj
