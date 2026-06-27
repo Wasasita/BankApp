@@ -1,7 +1,7 @@
 import { useCustomers, useAccounts, useTransactions } from '../api/queries';
-import { Card, EmptyState } from '../components/shared/Card';
-import { LoadingSpinner } from '../components/shared/LoadingSpinner';
-import { ErrorAlert } from '../components/shared/ErrorAlert';
+import { Card, EmptyState } from '../Components/shared/Card';
+import { LoadingSpinner } from '../Components/shared/LoadingSpinner';
+import { ErrorAlert } from '../Components/shared/ErrorAlert';
 import { formatCurrency, formatDateTime, getTransactionTypeEmoji } from '../utils/formatters';
 import { useNavigate } from 'react-router-dom';
 

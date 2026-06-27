@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTransactions } from '../api/queries'
-import { Card, EmptyState } from '../components/shared/Card'
-import { LoadingSpinner } from '../components/shared/LoadingSpinner'
+import { Card, EmptyState } from '../Components/shared/Card'
+import { LoadingSpinner } from '../Components/shared/LoadingSpinner'
 import { formatCurrency, formatDateTime, getTransactionTypeEmoji } from '../utils/formatters'
 
 function TransactionsPage() {

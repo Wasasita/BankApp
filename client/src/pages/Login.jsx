@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LoginForm } from '../components/forms/LoginForm';
+import { LoginForm } from '../Components/forms/LoginForm';
 
 /**
  * Login page

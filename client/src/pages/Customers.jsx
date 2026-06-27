@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useCustomers, useSearchCustomers, useCreateCustomer, useUpdateCustomer, useDeleteCustomer } from '../api/queries'
-import { Card, EmptyState } from '../components/shared/Card'
-import { LoadingSpinner } from '../components/shared/LoadingSpinner'
-import { ErrorAlert, SuccessMessage } from '../components/shared/ErrorAlert'
-import { Modal } from '../components/modals/Modal'
-import { ConfirmationModal } from '../components/modals/Modal'
-import { CustomerForm } from '../components/forms/CustomerForm'
+import { Card, EmptyState } from '../Components/shared/Card'
+import { LoadingSpinner } from '../Components/shared/LoadingSpinner'
+import { ErrorAlert, SuccessMessage } from '../Components/shared/ErrorAlert'
+import { Modal } from '../Components/modals/Modal'
+import { ConfirmationModal } from '../Components/modals/Modal'
+import { CustomerForm } from '../Components/forms/CustomerForm'
 import { formatCurrency } from '../utils/formatters'
 
 /**

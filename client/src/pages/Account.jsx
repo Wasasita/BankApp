@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useAccounts } from '../api/queries'
-import { Card, EmptyState } from '../components/shared/Card'
-import { LoadingSpinner } from '../components/shared/LoadingSpinner'
-import { SuccessMessage } from '../components/shared/ErrorAlert'
+import { Card, EmptyState } from '../Components/shared/Card'
+import { LoadingSpinner } from '../Components/shared/LoadingSpinner'
+import { SuccessMessage } from '../Components/shared/ErrorAlert'
 import { formatCurrency } from '../utils/formatters'
 
 function AccountsPage() {

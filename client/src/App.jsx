@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { Layout } from './components/layout/Layout';
-import { ProtectedRoute } from './components/layout/ProtectedRoute';
+import { Layout } from './Components/layout/Layout'; // component folder must use lowercase
+import { ProtectedRoute } from './Components/layout/ProtectedRoute';
 import LoginPage from './pages/Login';
 import DashboardPage from './pages/Dashboard';
 import CustomersPage from './pages/Customers';
