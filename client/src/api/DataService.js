@@ -1,4 +1,4 @@
-// Simple HTTP service for talking to a Spring Boot backend.
+// Simple HTTP service for talking to a Banking REST API.
 // Configure the backend base URL with Vite env var `VITE_API_BASE`.
 
 const BASE_URL =
@@ -7,13 +7,34 @@ const BASE_URL =
 
 async function request(path, opts = {}) {
   const url = `${BASE_URL}${path}`
-  const res = await fetch(url, opts)
+  
+  // Add Authorization header if token exists
+  const token = localStorage.getItem('token')
+  const headers = {
+    'Content-Type': 'application/json',
+    ...opts.headers,
+  }
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
+  const res = await fetch(url, { ...opts, headers })
+  
+  // Handle 401 - unauthorized
+  if (res.status === 401) {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    window.location.href = '/login'
+  }
+  
   if (!res.ok) {
     const body = await res.text().catch(() => '')
     const err = new Error(`HTTP ${res.status} ${res.statusText}: ${body}`)
     err.status = res.status
     throw err
   }
+  
   // try to parse json, fallback to text
   const ct = res.headers.get('content-type') || ''
   if (ct.includes('application/json')) return res.json()
@@ -21,6 +42,15 @@ async function request(path, opts = {}) {
 }
 
 const DataService = {
+
+  // Authentication
+
+  login(email, password) {
+    return request('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    })
+  },
 
   // Customers
 
@@ -49,7 +79,6 @@ const DataService = {
   createCustomer(customer) {
     return request('/api/customers', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(customer)
     })
   },
@@ -57,7 +86,6 @@ const DataService = {
   updateCustomer(id, customer) {
     return request(`/api/customers/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(customer)
     })
   },
@@ -89,7 +117,6 @@ const DataService = {
   createAccount(account, customerId) {
     return request(`/api/accounts?customerId=${encodeURIComponent(customerId)}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(account)
     })
   },
@@ -97,7 +124,6 @@ const DataService = {
   updateAccount(id, account) {
     return request(`/api/accounts/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(account)
     })
   },
@@ -105,6 +131,54 @@ const DataService = {
   deleteAccount(id) {
     return request(`/api/accounts/${id}`, {
       method: 'DELETE'
+    })
+  },
+
+  // Transactions
+
+  getTransactions() {
+    return request('/api/transactions')
+  },
+
+  getTransaction(id) {
+    return request(`/api/transactions/${id}`)
+  },
+
+  getAccountTransactions(accountId) {
+    return request(`/api/transactions/account/${accountId}`)
+  },
+
+  deposit(accountId, amount, description = '') {
+    return request('/api/transactions/deposit', {
+      method: 'POST',
+      body: JSON.stringify({
+        accountId,
+        amount,
+        description
+      })
+    })
+  },
+
+  withdraw(accountId, amount, description = '') {
+    return request('/api/transactions/withdraw', {
+      method: 'POST',
+      body: JSON.stringify({
+        accountId,
+        amount,
+        description
+      })
+    })
+  },
+
+  transfer(fromAccountId, toAccountId, amount, description = '') {
+    return request('/api/transactions/transfer', {
+      method: 'POST',
+      body: JSON.stringify({
+        fromAccountId,
+        toAccountId,
+        amount,
+        description
+      })
     })
   }
 }

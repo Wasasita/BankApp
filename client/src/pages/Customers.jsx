@@ -1,344 +1,223 @@
-import { useEffect, useState } from 'react'
-// import { useNavigate } from 'react-router-dom'
-import DataService from '../api/DataService'
-import Customer from '../models/Customer'
-import './Customers.css'
+import { useState } from 'react'
+import { useCustomers, useSearchCustomers, useCreateCustomer, useUpdateCustomer, useDeleteCustomer } from '../api/queries'
+import { Card, EmptyState } from '../components/shared/Card'
+import { LoadingSpinner } from '../components/shared/LoadingSpinner'
+import { ErrorAlert, SuccessMessage } from '../components/shared/ErrorAlert'
+import { Modal } from '../components/modals/Modal'
+import { ConfirmationModal } from '../components/modals/Modal'
+import { CustomerForm } from '../components/forms/CustomerForm'
+import { formatCurrency } from '../utils/formatters'
 
-export default function Customers() {
-  // const navigate = useNavigate()
+/**
+ * Customers page - CRUD management for customers with modern UI
+ */
+function CustomersPage() {
+  const { data: customers = [], isLoading, error } = useCustomers()
+  const { data: searchResults = [], isPending: isSearching } = useSearchCustomers(searchQuery)
+  const createCustomer = useCreateCustomer()
+  const updateCustomer = useUpdateCustomer()
+  const deleteCustomer = useDeleteCustomer()
 
-  const [customers, setCustomers] = useState([])
-  const [allCustomers, setAllCustomers] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editingCustomer, setEditingCustomer] = useState(null)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [customerToDelete, setCustomerToDelete] = useState(null)
+  const [successMessage, setSuccessMessage] = useState('')
 
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const displayedCustomers = searchQuery ? searchResults : customers
 
-  const [search, setSearch] = useState('')
-  const [premiumThreshold, setPremiumThreshold] = useState('10000')
-  const [message, setMessage] = useState('')
-
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [newName, setNewName] = useState('')
-  const [newEmail, setNewEmail] = useState('')
-  const [createError, setCreateError] = useState('')
-  const [createLoading, setCreateLoading] = useState(false)
-
-  useEffect(() => {
-    let mounted = true
-
-    const loadCustomers = async () => {
-      try {
-        const res = await DataService.getCustomers()
-        if (!mounted) return
-
-        const list = Array.isArray(res)
-          ? await enrichCustomersWithTotal(res.map((c) => Customer.from(c)))
-          : []
-
-        setCustomers(list)
-        setAllCustomers(list)
-      } catch (err) {
-        if (!mounted) return
-        setError(err.message || 'Failed to load customers')
-      } finally {
-        if (!mounted) return
-        setLoading(false)
-      }
-    }
-
-    loadCustomers()
-
-    return () => {
-      mounted = false
-    }
-  }, [])
-
-  const enrichCustomersWithTotal = async (list) => {
-    const totals = await Promise.all(
-      list.map(async (customer) => {
-        try {
-          const total = await DataService.getCustomerTotalBalance(customer.id)
-          return Number(total.totalBalance) || 0  // ← extract .totalBalance
-        } catch {
-          return 0
-        }
-      })
-    )
-
-    return list.map((customer, index) => ({
-      ...customer,
-      totalBalance: totals[index]
-    }))
-  }
-
-  const handleLoadAll = async () => {
-    setMessage('')
-    setError(null)
-    setSearch('')
-    setPremiumThreshold('10000')
-    setLoading(true)
-
+  const handleCreate = async (data) => {
     try {
-      const res = await DataService.getCustomers()
-      const list = Array.isArray(res)
-        ? await enrichCustomersWithTotal(res.map((c) => Customer.from(c)))
-        : []
-
-      setCustomers(list)
-      setAllCustomers(list)
-    } catch (err) {
-      setError(err.message || 'Failed to load customers')
-    } finally {
-      setLoading(false)
+      await createCustomer.mutateAsync(data)
+      setIsCreateModalOpen(false)
+      setSuccessMessage('Customer created successfully')
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } catch (error) {
+      console.error('Create error:', error)
     }
   }
 
-  const handleSearch = async () => {
-    setMessage('')
-    setError(null)
+  const handleEdit = (customer) => {
+    setEditingCustomer(customer)
+    setIsEditModalOpen(true)
+  }
 
-    if (!search.trim()) {
-      setCustomers(allCustomers)
-      return
-    }
-
+  const handleUpdate = async (data) => {
     try {
-      const results = await DataService.searchCustomers(search)
-      if (!results || results.length === 0) {
-        setCustomers([])
-        setMessage(`No customer found with name "${search}"`)
-        return
-      }
-
-      const list = Array.isArray(results)
-        ? await enrichCustomersWithTotal(results.map((c) => Customer.from(c)))
-        : []
-
-      setCustomers(list)
-    } catch (err) {
-      setError(err.message || 'Search failed')
+      await updateCustomer.mutateAsync({ id: editingCustomer.id, customer: data })
+      setIsEditModalOpen(false)
+      setEditingCustomer(null)
+      setSuccessMessage('Customer updated successfully')
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } catch (error) {
+      console.error('Update error:', error)
     }
   }
 
-  const handlePremiumSearch = async () => {
-    setMessage('')
-    setError(null)
+  const handleDeleteClick = (customer) => {
+    setCustomerToDelete(customer)
+    setDeleteConfirmOpen(true)
+  }
 
+  const handleDeleteConfirm = async () => {
     try {
-      const results = await DataService.getPremiumCustomers(
-        Number(premiumThreshold)
-      )
-
-      if (!results || results.length === 0) {
-        setCustomers([])
-        setMessage(
-          `No premium customers found above $${premiumThreshold}`
-        )
-        return
-      }
-
-      const list = Array.isArray(results)
-        ? await enrichCustomersWithTotal(results.map((c) => Customer.from(c)))
-        : []
-
-      setCustomers(list)
-    } catch (err) {
-      setError(err.message || 'Premium search failed')
+      await deleteCustomer.mutateAsync(customerToDelete.id)
+      setDeleteConfirmOpen(false)
+      setCustomerToDelete(null)
+      setSuccessMessage('Customer deleted successfully')
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } catch (error) {
+      console.error('Delete error:', error)
     }
   }
 
-  const handleCreateCustomer = async (event) => {
-    event.preventDefault()
-    setCreateError('')
-    setCreateLoading(true)
-
-    if (!newName.trim() || !newEmail.trim()) {
-      setCreateError('Name and email are required.')
-      setCreateLoading(false)
-      return
-    }
-
-    try {
-      const result = await DataService.createCustomer({
-        name: newName,
-        email: newEmail
-      })
-
-      const customer = Customer.from(result)
-      const total = await DataService.getCustomerTotalBalance(customer.id).catch(
-        () => 0
-      )
-
-      const created = { ...customer, totalBalance: Number(total.totalBalance) || 0 }
-      setCustomers((prev) => [created, ...prev])
-      setAllCustomers((prev) => [created, ...prev])
-      setNewName('')
-      setNewEmail('')
-      setIsCreateOpen(false)
-      setMessage(`Created customer ${created.name}`)
-    } catch (err) {
-      setCreateError(err.message || 'Failed to create customer')
-    } finally {
-      setCreateLoading(false)
-    }
-  }
-
-  const viewAccountsForCustomer = (customerId) => {
-    const params = new URLSearchParams()
-    params.set('page', 'Accounts')
-    params.set('customerId', customerId)
-    window.open(
-      `${window.location.origin}${window.location.pathname}?${params.toString()}`,
-      '_blank'
-    )
-  }
+  if (isLoading) return <LoadingSpinner />
 
   return (
-    <div className="customers">
-      <div className="customers-header">
-        <h1>Customer Management</h1>
-
+    <div className="space-y-6">
+      {/* Header with Search */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-3xl font-bold text-neutral-900">Customers</h1>
         <button
-          className="primary-button"
-          onClick={() => setIsCreateOpen(true)}
+          onClick={() => setIsCreateModalOpen(true)}
+          className="btn-primary"
         >
-          + Create Customer
+          ➕ Add Customer
         </button>
       </div>
 
-      <div className="search-section">
-        <h3>Search By Name</h3>
-
-        <div className="search-bar">
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Enter customer name"
-          />
-
-          <button onClick={handleSearch}>Search</button>
-          <button onClick={handleLoadAll}>All Customers</button>
-          <button
-            onClick={() => {
-              setSearch('')
-              setMessage('')
-              setCustomers(allCustomers)
-            }}
-          >
-            Reset
-          </button>
-        </div>
-      </div>
-
-      <div className="premium-section">
-        <h3 className="premium-title">Premium Customers</h3>
-
-        <p className="premium-description">
-          Only customers whose account balances exceed the specified
-          threshold.
-        </p>
-
-        <div className="search-bar">
-          <input
-            type="number"
-            value={premiumThreshold}
-            onChange={(e) => setPremiumThreshold(e.target.value)}
-            placeholder="Minimum balance"
-          />
-
-          <button onClick={handlePremiumSearch}>Filter</button>
-        </div>
-      </div>
-
-      {message && <p className="message">{message}</p>}
-
-      {loading && <p>Loading customers...</p>}
-
-      {error && (
-        <p style={{ color: 'red' }}>Error: {error}</p>
+      {/* Messages */}
+      {error && <ErrorAlert message="Failed to load customers" />}
+      {successMessage && (
+        <SuccessMessage message={successMessage} onDismiss={() => setSuccessMessage('')} />
       )}
 
-      {!loading &&
-        !error &&
-        customers.map((c) => (
-          <div key={c.id} className="customer-row">
-            <div className="customer-avatar">
-              {(c.name || '?').charAt(0).toUpperCase()}
-            </div>
+      {/* Search */}
+      <div>
+        <input
+          type="text"
+          placeholder="Search customers by name..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="input-field"
+        />
+        {searchQuery && isSearching && <p className="mt-2 text-sm text-neutral-600">Searching...</p>}
+      </div>
 
-            <div className="customer-info">
-              <p className="customer-name">{c.name}</p>
-              <p className="customer-id">ID: {c.id}</p>
-              <p className="customer-email">{c.email}</p>
-              <p className="customer-balance">
-                Total Balance: ${Number(c.totalBalance || 0).toLocaleString()}
-              </p>
-            </div>
-
-            <div className="customer-actions">
-              {/* <button onClick={() => viewAccountsForCustomer(c.id)}>
-                View Accounts
-              </button> */}
-
+      {/* Customers Grid */}
+      {displayedCustomers.length === 0 ? (
+        <EmptyState
+          icon="👥"
+          title="No Customers"
+          description={searchQuery ? 'No customers found matching your search' : 'No customers yet. Create your first customer to get started.'}
+          action={
+            !searchQuery && (
               <button
-                onClick={async () => {
-                  await DataService.deleteCustomer(c.id)
-                  setCustomers((prev) => prev.filter((x) => x.id !== c.id))
-                  setAllCustomers((prev) => prev.filter((x) => x.id !== c.id))
-                }}
+                onClick={() => setIsCreateModalOpen(true)}
+                className="btn-primary"
               >
-                Delete
+                Create Customer
               </button>
-            </div>
-          </div>
-        ))}
-
-      {isCreateOpen && (
-        <div className="modal-overlay">
-          <div className="modal-card">
-            <h2>Create Customer</h2>
-
-            <form onSubmit={handleCreateCustomer}>
-              <label>
-                Name
-                <input
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="Customer name"
-                />
-              </label>
-
-              <label>
-                Email
-                <input
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="Customer email"
-                />
-              </label>
-
-              {createError && (
-                <p className="message">{createError}</p>
-              )}
-
-              <div className="modal-actions">
-                <button type="submit" disabled={createLoading}>
-                  {createLoading ? 'Creating...' : 'Create'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsCreateOpen(false)
-                    setCreateError('')
-                  }}
-                >
-                  Cancel
-                </button>
+            )
+          }
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {displayedCustomers.map((customer) => (
+            <Card
+              key={customer.id}
+              footer={
+                <div className="flex gap-2 justify-end">
+                  <button
+                    onClick={() => handleEdit(customer)}
+                    className="text-sm btn-secondary"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(customer)}
+                    className="text-sm btn-danger"
+                  >
+                    Delete
+                  </button>
+                </div>
+              }
+            >
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs uppercase font-bold text-neutral-500">Name</p>
+                  <p className="text-lg font-semibold text-neutral-900">{customer.name}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase font-bold text-neutral-500">Email</p>
+                  <p className="text-neutral-700 truncate">{customer.email}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase font-bold text-neutral-500">Total Balance</p>
+                  <p className="text-lg font-bold text-primary">
+                    {formatCurrency(customer.totalBalance)}
+                  </p>
+                </div>
               </div>
-            </form>
-          </div>
+            </Card>
+          ))}
         </div>
       )}
+
+      {/* Create Modal */}
+      <Modal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        title="Create Customer"
+      >
+        <CustomerForm
+          onSubmit={handleCreate}
+          onCancel={() => setIsCreateModalOpen(false)}
+          isLoading={createCustomer.isPending}
+        />
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false)
+          setEditingCustomer(null)
+        }}
+        title="Edit Customer"
+      >
+        {editingCustomer && (
+          <CustomerForm
+            initialData={editingCustomer}
+            onSubmit={handleUpdate}
+            onCancel={() => {
+              setIsEditModalOpen(false)
+              setEditingCustomer(null)
+            }}
+            isLoading={updateCustomer.isPending}
+          />
+        )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false)
+          setCustomerToDelete(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Customer"
+        message={`Are you sure you want to delete ${customerToDelete?.name}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDangerous={true}
+        isLoading={deleteCustomer.isPending}
+      />
     </div>
   )
 }
+
+export default CustomersPage

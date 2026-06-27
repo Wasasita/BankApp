@@ -1,54 +1,89 @@
-import { useState } from 'react'
-import './App.css'
-import Header from './Components/Header'
-import Accounts from './pages/Account'
-import Customers from './pages/Customers'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { Layout } from './components/layout/Layout';
+import { ProtectedRoute } from './components/layout/ProtectedRoute';
+import LoginPage from './pages/Login';
+import DashboardPage from './pages/Dashboard';
+import CustomersPage from './pages/Customers';
+import AccountsPage from './pages/Account';
+import TransactionsPage from './pages/Transactions';
+import DepositPage from './pages/Deposit';
+import WithdrawPage from './pages/Withdraw';
+import TransferPage from './pages/Transfer';
 
-function App() {
-  const searchParams = new URLSearchParams(window.location.search)
-  const initialCustomerId = searchParams.get('customerId')
-  const initialPage =
-    searchParams.get('page') ||
-    (initialCustomerId ? 'Accounts' : 'Home')
+// Placeholder for Premium Customers (will refactor to use usePremiumCustomers hook)
+const PremiumCustomers = () => <div className="p-6"><h2 className="text-2xl font-bold">Premium Customers - Coming Soon</h2></div>;
 
-  const [page, setPage] = useState(initialPage)
-  const customerId = initialCustomerId
-    ? Number(initialCustomerId)
-    : undefined
+// Create Query Client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 10, // 10 minutes (formerly cacheTime)
+    },
+  },
+});
+
+/**
+ * AppRoutes component - Routes that depend on Auth context
+ */
+function AppRoutes() {
+  const auth = useAuth();
+  
+  if (auth.isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-neutral-200 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <div className="app">
-      <Header activePage={page} onNavigate={setPage} />
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/login" element={<LoginPage />} />
 
-      {page === 'Home' && (
-        <main className="color-black flex-1">
-          <h2>Banking Frontend</h2>
+      {/* Protected Routes */}
+      <Route
+        element={
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated}>
+            <Layout user={auth.user?.email || auth.user || 'User'} onLogout={auth.logout} />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/customers" element={<CustomersPage />} />
+        <Route path="/accounts" element={<AccountsPage />} />
+        <Route path="/transactions" element={<TransactionsPage />} />
+        <Route path="/deposit" element={<DepositPage />} />
+        <Route path="/withdraw" element={<WithdrawPage />} />
+        <Route path="/transfer" element={<TransferPage />} />
+        <Route path="/premium-customers" element={<PremiumCustomers />} />
+      </Route>
 
-          <p>
-            This application provides a user interface for interacting
-            with the Banking REST API.
-          </p>
-        </main>
-      )}
-
-      {page === 'Customers' && <Customers />}
-
-      {page === 'Accounts' && <Accounts customerId={customerId} />}
-      </div>
-
-      <footer className="footer bg-neutral-900 text-white p-6 text-center text-sm mt-auto">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p>&copy; {new Date().getFullYear()} Banking App. All rights reserved.</p>
-          <div className="flex gap-4">
-            <a href="#privacy" className="hover:underline text-neutral-400 hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#terms" className="hover:underline text-neutral-400 hover:text-white transition-colors">Terms of Service</a>
-          </div>
-        </div>
-      </footer>
-      
-    </div>
-  )
+      {/* Default Route */}
+      <Route
+        path="/"
+        element={<Navigate to={auth.isAuthenticated ? '/dashboard' : '/login'} replace />}
+      />
+    </Routes>
+  );
 }
 
-export default App
+/**
+ * Main App component
+ */
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
+}
+
+export default App;
