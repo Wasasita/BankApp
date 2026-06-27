@@ -26,4 +26,21 @@ public class AuthController : ControllerBase
 
         return Ok(response);
     }
+
+    [HttpPost("signup")]
+    public async Task<ActionResult<SignupResponse>> Signup([FromBody] SignupRequest request)
+    {
+        var (response, error) = await _authService.SignupAsync(request);
+        if (response == null)
+        {
+            if (error == "A user with this username already exists")
+            {
+                return Conflict(new { message = error });
+            }
+
+            return BadRequest(new { message = error });
+        }
+
+        return CreatedAtAction(nameof(Signup), response);
+    }
 }

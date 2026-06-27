@@ -18,4 +18,16 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetByUsernameAsync(string username)
         => await _users.Find(u => u.Username == username).FirstOrDefaultAsync();
+
+    public async Task<User> CreateAsync(User user)
+    {
+        var last = await _users.Find(_ => true)
+            .SortByDescending(u => u.Id)
+            .FirstOrDefaultAsync();
+
+        user.Id = last == null ? 1 : last.Id + 1;
+
+        await _users.InsertOneAsync(user);
+        return user;
+    }
 }

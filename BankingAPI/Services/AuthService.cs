@@ -23,12 +23,13 @@ public class AuthService
 
     public async Task<LoginResponse?> LoginAsync(LoginRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+        var loginIdentifier = request.GetLoginIdentifier();
+        if (string.IsNullOrWhiteSpace(loginIdentifier) || string.IsNullOrWhiteSpace(request.Password))
         {
             return null;
         }
 
-        var user = await _userRepository.GetByUsernameAsync(request.Username);
+        var user = await _userRepository.GetByUsernameAsync(loginIdentifier);
         if (user == null)
         {
             return null;
@@ -42,6 +43,43 @@ public class AuthService
 
         var token = CreateJwtToken(user);
         return new LoginResponse { Token = token };
+    }
+
+    public async Task<(SignupResponse? Response, string? Error)> SignupAsync(SignupRequest request)
+    {
+        var username = request.GetUsername();
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(request.Password))
+        {
+            return (null, "Username (or email) and password are required");
+        }
+
+        var role = string.IsNullOrWhiteSpace(request.Role) ? "Admin" : request.Role.Trim();
+        if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(role, "User", StringComparison.OrdinalIgnoreCase))
+        {
+            return (null, "Role must be Admin or User");
+        }
+
+        var existingUser = await _userRepository.GetByUsernameAsync(username);
+        if (existingUser != null)
+        {
+            return (null, "A user with this username already exists");
+        }
+
+        var user = new User
+        {
+            Username = username,
+            PasswordHash = ComputeSha256Hash(request.Password),
+            Role = char.ToUpper(role[0]) + role[1..].ToLower()
+        };
+
+        var createdUser = await _userRepository.CreateAsync(user);
+        return (new SignupResponse
+        {
+            Id = createdUser.Id,
+            Username = createdUser.Username,
+            Role = createdUser.Role
+        }, null);
     }
 
     private string CreateJwtToken(User user)

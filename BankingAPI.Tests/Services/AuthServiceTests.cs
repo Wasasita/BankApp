@@ -142,4 +142,56 @@ public class AuthServiceTests
         Assert.NotNull(roleClaim);
         Assert.Equal("Admin", roleClaim!.Value);
     }
+
+    [Fact]
+    public async Task LoginAsync_WithEmailField_ShouldReturnToken()
+    {
+        var service = _fixture.AuthService;
+
+        var request = new LoginRequest { Email = "admin", Password = "admin123" };
+        var result = await service.LoginAsync(request);
+
+        Assert.NotNull(result);
+        Assert.NotEmpty(result!.Token);
+    }
+
+    [Fact]
+    public async Task SignupAsync_ValidRequest_ShouldCreateUser()
+    {
+        var service = _fixture.AuthService;
+
+        var request = new SignupRequest { Email = "demo@example.com", Password = "password", Role = "Admin" };
+        var (response, error) = await service.SignupAsync(request);
+
+        Assert.Null(error);
+        Assert.NotNull(response);
+        Assert.Equal("demo@example.com", response!.Username);
+    }
+
+    [Fact]
+    public async Task SignupAsync_CreatedUserCanLogin()
+    {
+        var service = _fixture.AuthService;
+
+        var signupRequest = new SignupRequest { Email = "demo@example.com", Password = "password", Role = "Admin" };
+        await service.SignupAsync(signupRequest);
+
+        var loginRequest = new LoginRequest { Email = "demo@example.com", Password = "password" };
+        var loginResult = await service.LoginAsync(loginRequest);
+
+        Assert.NotNull(loginResult);
+        Assert.NotEmpty(loginResult!.Token);
+    }
+
+    [Fact]
+    public async Task SignupAsync_DuplicateUsername_ShouldReturnError()
+    {
+        var service = _fixture.AuthService;
+
+        var request = new SignupRequest { Username = "admin", Password = "password", Role = "Admin" };
+        var (response, error) = await service.SignupAsync(request);
+
+        Assert.Null(response);
+        Assert.Equal("A user with this username already exists", error);
+    }
 }
